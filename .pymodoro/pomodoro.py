@@ -10,10 +10,12 @@ import sys
 
 # configurations
 session_file = '/home/dchu/.pymodoro/pomodoro_session'
-sound_file = '/home/dchu/.pymodoro/rimshot.wav'
 session_duration = 25 * 60 # 25 minutes => 25 * 60
 update_interval = 1 # 1 => 1 second sleep between updates
 minutes_per_mark = 5 # 5 => 5 minutes is represented as one #
+
+#sound_file = '/home/dchu/.pymodoro/rimshot.wav'
+sound_file = '/home/dchu/.pymodoro/nokiaring.wav'
 
 # constant infered from configurations
 total_num_marks = int(session_duration / 60 / minutes_per_mark + 0.5)
