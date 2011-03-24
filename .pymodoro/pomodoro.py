@@ -4,6 +4,7 @@
 #  - aplay to play a sound of your choice
 # To do
 #  - add support for breaks
+#  - add support for locking the screen with gnome-screensaver-command --lock
 import time
 import os
 import sys
