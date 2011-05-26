@@ -5,18 +5,21 @@
 # To do
 #  - add support for breaks
 #  - add support for locking the screen with gnome-screensaver-command --lock
+#  - add support for multiple counters
+#  - allow configuration directly from Xmobar via flags
 import time
 import os
 import sys
 
 # configurations
-session_file = '/home/dchu/.pymodoro/pomodoro_session'
-session_duration = 25 * 60 # 25 minutes => 25 * 60
+pymodoro_directory = os.path.expanduser('~/.pymodoro')
+session_file = pymodoro_directory + '/pomodoro_session'
+session_duration = 5 * 60 # 25 minutes => 25 * 60
 update_interval = 1 # 1 => 1 second sleep between updates
 minutes_per_mark = 5 # 5 => 5 minutes is represented as one #
 
 #sound_file = '/home/dchu/.pymodoro/rimshot.wav'
-sound_file = '/home/dchu/.pymodoro/nokiaring.wav'
+sound_file = pymodoro_directory + '/nokiaring.wav'
 
 # constant infered from configurations
 total_num_marks = int(session_duration / 60 / minutes_per_mark + 0.5)
@@ -26,9 +29,9 @@ to_play_session_end_sound = False
 
 # sanity check
 if not os.path.exists(sound_file):
-    print "Error: Cannot find sound file %s" % sound_file
+    print("Error: Cannot find sound file %s" % sound_file)
 if not os.path.exists(session_file):
-    print "Error: Cannot find session file %s. Please make it." % session_file
+    print("Error: Cannot find session file %s. Please make it." % session_file)
 
 
 # how to find seconds_left
