@@ -16,13 +16,17 @@ pymodoro_directory = os.path.expanduser('~/.pymodoro')
 session_file = pymodoro_directory + '/pomodoro_session'
 session_duration = 5 * 60 # 25 minutes => 25 * 60
 update_interval = 1 # 1 => 1 second sleep between updates
-minutes_per_mark = 5 # 5 => 5 minutes is represented as one #
+total_num_marks = 20
+#minutes_per_mark = 5 # 5 => 5 minutes is represented as one #
+full_mark = '#'
+empty_mark = '·'
 
 #sound_file = '/home/dchu/.pymodoro/rimshot.wav'
 sound_file = pymodoro_directory + '/nokiaring.wav'
 
 # constant infered from configurations
-total_num_marks = int(session_duration / 60 / minutes_per_mark + 0.5)
+# total_num_marks = int(session_duration / 60 / minutes_per_mark + 0.5)
+seconds_per_mark = (session_duration / total_num_marks)
 
 # variables to keep track of sound playing
 to_play_session_end_sound = False
@@ -46,20 +50,26 @@ while True:
     if seconds_left > 0:
         # Calculate the time left
         minutes_left = int(seconds_left / 60)
-        seconds_left = int(seconds_left - minutes_left * 60)
+        output_seconds_left = int(seconds_left - minutes_left * 60)
 
         # Construct progress indicator
-        num_mark = (minutes_left/minutes_per_mark + 1)
-        progress_bar = '#' * num_mark + ' ' * (total_num_marks - num_mark)
+        num_mark = (seconds_left/seconds_per_mark)
+        progress_bar = full_mark * int(num_mark) + empty_mark * (total_num_marks - int(num_mark))
 
         # Print out the status
-        sys.stdout.write("P %s %02d:%02d\n" % (progress_bar, minutes_left, seconds_left))
+        sys.stdout.write("P %s %02d:%02d\n" % (progress_bar, minutes_left, output_seconds_left))
         
         # We are in a session, so we should play a sound once done
         to_play_session_end_sound = True
     else:
-        # Pomodoro is done, print a blank template
-        sys.stdout.write('Pomodoro Break\n')
+        # Calculate the time since last pomodoro
+        seconds_left = -seconds_left
+        minutes_left = int(seconds_left / 60)
+        hours_left = int(minutes_left / 60)
+        seconds_left = int(seconds_left - minutes_left * 60)
+        
+        # Pomodoro is done, print time since
+        sys.stdout.write("B %02d:%02d\n" % (minutes_left, seconds_left))
         
         # If we were in a session, play a sound
         if to_play_session_end_sound:
