@@ -7,6 +7,7 @@
 #  - add support for locking the screen with gnome-screensaver-command --lock
 #  - add support for multiple counters
 #  - add expected/finished number of pomodoros by weekday
+#  - load configuration from file?
 
 import time
 import os
@@ -86,22 +87,22 @@ def set_configuration_from_arguments(args):
 parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
 session_group = parser.add_mutually_exclusive_group()
-session_group.add_argument('-ps', '--pomodoro-sec', action='store', type=int, help='Pomodoro duration in seconds.', metavar='DURATION', dest='session_duration_in_seconds_arg')
-session_group.add_argument('-pm', '--pomodoro-min', action='store', type=int, help='Pomodoro duration in minutes', metavar='DURATION', dest='session_duration_in_minutes_arg')
+session_group.add_argument('-ps', '--pomodoro-sec', action='store', type=int, help='Pomodoro duration in seconds (default: 25 * 60).', metavar='DURATION', dest='session_duration_in_seconds_arg')
+session_group.add_argument('-pm', '--pomodoro-min', action='store', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='DURATION', dest='session_duration_in_minutes_arg')
 
 break_group = parser.add_mutually_exclusive_group()
-break_group.add_argument('-bs', '--break-sec', action='store', type=int, help='Break duration in seconds.', metavar='DURATION', dest='break_duration_in_seconds_arg')
-break_group.add_argument('-bm', '--break-min', action='store', type=int, help='Break duration in minutes', metavar='DURATION', dest='break_duration_in_minutes_arg')
+break_group.add_argument('-bs', '--break-sec', action='store', type=int, help='Break duration in seconds (default: 5 * 60).', metavar='DURATION', dest='break_duration_in_seconds_arg')
+break_group.add_argument('-bm', '--break-min', action='store', type=int, help='Break duration in minutes (default: 5).', metavar='DURATION', dest='break_duration_in_minutes_arg')
 
-parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds', metavar='DURATION', dest='update_interval_in_seconds_arg')
-parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters', metavar='CHARACTERS', dest='total_number_of_marks_arg')
+parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds_arg')
+parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks_arg')
 
-parser.add_argument('-fp', '--full-pomodoro', action='store', help='Pomodoro full mark characters', metavar='CHARACTER', dest='session_full_mark_character_arg')
-parser.add_argument('-fb', '--full-break', action='store', help='Break full mark characters', metavar='CHARACTER', dest='break_full_mark_character_arg')
-parser.add_argument('-e', '--empty', action='store', help='Empty mark characters', metavar='CHARACTER', dest='empty_mark_character_arg')
+parser.add_argument('-fp', '--full-pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character_arg')
+parser.add_argument('-fb', '--full-break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character_arg')
+parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character_arg')
 
-parser.add_argument('-sp', '--sound-pomodoro', action='store', help='Pomodoro end sound file', metavar='PATH', dest='session_sound_file_arg')
-parser.add_argument('-sb', '--sound-break', action='store', help='Break end sound file', metavar='PATH', dest='break_sound_file_arg')
+parser.add_argument('-sp', '--sound-pomodoro', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file_arg')
+parser.add_argument('-sb', '--sound-break', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file_arg')
 parser.add_argument('-s', '--silent', action='store_true', help='Play no end sounds', dest='silent')
 
 args = parser.parse_args()
