@@ -3,11 +3,6 @@
 #          Dominik Mayer <dominik.mayer@gmail.com>
 # Prerequisite
 #  - aplay to play a sound of your choice
-# To do
-#  - add support for locking the screen with gnome-screensaver-command --lock
-#  - add support for multiple counters
-#  - add expected/finished number of pomodoros by weekday
-#  - load configuration from file?
 
 import time
 import os
@@ -118,12 +113,13 @@ if not os.path.exists(session_sound_file):
     print("Error: Cannot find sound file %s" % sound_file)
 if not os.path.exists(break_sound_file):
     print("Error: Cannot find sound file %s" % sound_file)
-if not os.path.exists(session_file):
-    print("Error: Cannot find session file %s. Please make it." % session_file)
 
 def get_seconds_left():
-    start_time = os.path.getmtime(session_file)
-    return session_duration_in_seconds - time.time() + start_time
+    if os.path.exists(session_file):
+        start_time = os.path.getmtime(session_file)
+        return session_duration_in_seconds - time.time() + start_time
+    else:
+        return
 
 def print_session_output(seconds_left):
     print_output("P", session_duration_in_seconds, seconds_left, session_full_mark_character)
@@ -198,7 +194,9 @@ def play_break_sound():
 # Repeat printing the status of our session
 seconds_left = get_seconds_left()
 while True:
-    if 0 < seconds_left:
+    if seconds_left == None:
+        sys.stdout.write("P —\n")
+    elif 0 < seconds_left:
         print_session_output(seconds_left)
         play_sound_after_session = True
     elif -break_duration_in_seconds <= seconds_left < 0:
