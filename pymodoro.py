@@ -53,52 +53,50 @@ def set_configuration_from_arguments(args):
     global session_sound_file
     global break_sound_file
     global enable_sound
-    if args.session_duration_in_seconds_arg:
-        session_duration_in_seconds = args.session_duration_in_seconds_arg
-    if args.session_duration_in_minutes_arg:
-        session_duration_in_seconds = args.session_duration_in_minutes_arg * 60
-    if args.break_duration_in_seconds_arg:
-        break_duration_in_seconds = args.break_duration_in_seconds_arg
-    if args.break_duration_in_minutes_arg:
-        break_duration_in_seconds = args.break_duration_in_minutes_arg * 60
-    if args.update_interval_in_seconds_arg:
-        update_interval_in_seconds = args.update_interval_in_seconds_arg
-    if args.total_number_of_marks_arg:
-        total_number_of_marks = args.total_number_of_marks_arg
-    if args.session_full_mark_character_arg:
-        session_full_mark_character = args.session_full_mark_character_arg
-    if args.break_full_mark_character_arg:
-        break_full_mark_character = args.break_full_mark_character_arg
-    if args.empty_mark_character_arg:
-        empty_mark_character = args.empty_mark_character_arg
-    if args.session_sound_file_arg:
-        session_sound_file = args.session_sound_file_arg
-    if args.break_sound_file_arg:
-        break_sound_file = args.break_sound_file_arg
+    if args.session_duration:
+        if args.durations_in_seconds == True:
+            session_duration_in_seconds = args.session_duration
+        else:
+            session_duration_in_seconds = args.session_duration * 60
+    if args.break_duration:
+        if args.durations_in_seconds == True:
+            break_duration_in_seconds = args.break_duration
+        else:
+            break_duration_in_seconds = args.break_duration * 60
+    if args.update_interval_in_seconds:
+        update_interval_in_seconds = args.update_interval_in_seconds
+    if args.total_number_of_marks:
+        total_number_of_marks = args.total_number_of_marks
+    if args.session_full_mark_character:
+        session_full_mark_character = args.session_full_mark_character
+    if args.break_full_mark_character:
+        break_full_mark_character = args.break_full_mark_character
+    if args.empty_mark_character:
+        empty_mark_character = args.empty_mark_character
+    if args.session_sound_file:
+        session_sound_file = args.session_sound_file
+    if args.break_sound_file:
+        break_sound_file = args.break_sound_file
     if args.silent:
         enable_sound = False
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
-session_group = parser.add_mutually_exclusive_group()
-session_group.add_argument('-ps', '--pomodoro-sec', action='store', type=int, help='Pomodoro duration in seconds (default: 25 * 60).', metavar='DURATION', dest='session_duration_in_seconds_arg')
-session_group.add_argument('-pm', '--pomodoro-min', action='store', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='DURATION', dest='session_duration_in_minutes_arg')
+parser.add_argument('-s', '--seconds', action='store_true', help='Changes format of input times from minutes to seconds.', dest='durations_in_seconds')
+parser.add_argument('session_duration', action='store', nargs='?', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='POMODORO DURATION')
+parser.add_argument('break_duration', action='store', nargs='?', type=int, help='Break duration in minutes (default: 5).', metavar='BREAK DURATION')
 
-break_group = parser.add_mutually_exclusive_group()
-break_group.add_argument('-bs', '--break-sec', action='store', type=int, help='Break duration in seconds (default: 5 * 60).', metavar='DURATION', dest='break_duration_in_seconds_arg')
-break_group.add_argument('-bm', '--break-min', action='store', type=int, help='Break duration in minutes (default: 5).', metavar='DURATION', dest='break_duration_in_minutes_arg')
+parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds')
+parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks')
 
-parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds_arg')
-parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks_arg')
+parser.add_argument('-fp', '--full-pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character')
+parser.add_argument('-fb', '--full-break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character')
+parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character')
 
-parser.add_argument('-fp', '--full-pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character_arg')
-parser.add_argument('-fb', '--full-break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character_arg')
-parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character_arg')
-
-parser.add_argument('-sp', '--sound-pomodoro', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file_arg')
-parser.add_argument('-sb', '--sound-break', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file_arg')
-parser.add_argument('-s', '--silent', action='store_true', help='Play no end sounds', dest='silent')
+parser.add_argument('-sp', '--sound-pomodoro', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
+parser.add_argument('-sb', '--sound-break', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
+parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
 
 args = parser.parse_args()
 set_configuration_from_arguments(args)
