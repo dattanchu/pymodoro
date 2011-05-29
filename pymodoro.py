@@ -42,7 +42,7 @@ session_sound_file = pymodoro_directory + '/' + session_sound_file_config
 break_sound_file = pymodoro_directory + '/' + break_sound_file_config
 
 def set_configuration_from_arguments(args):
-	#print(args)
+    #print(args)
     global session_duration_in_seconds
     global break_duration_in_seconds
     global update_interval_in_seconds
@@ -79,6 +79,8 @@ def set_configuration_from_arguments(args):
         break_sound_file = args.break_sound_file
     if args.silent:
         enable_sound = False
+    if args.no_break:
+        break_duration_in_seconds = 0
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
@@ -86,6 +88,8 @@ parser = argparse.ArgumentParser(description='Create a Pomodoro display for a st
 parser.add_argument('-s', '--seconds', action='store_true', help='Changes format of input times from minutes to seconds.', dest='durations_in_seconds')
 parser.add_argument('session_duration', action='store', nargs='?', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='POMODORO DURATION')
 parser.add_argument('break_duration', action='store', nargs='?', type=int, help='Break duration in minutes (default: 5).', metavar='BREAK DURATION')
+
+parser.add_argument('-b', '--no-break', action='store_true', help='No break sound.', dest='no_break')
 
 parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds')
 parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks')
@@ -200,8 +204,10 @@ while True:
     elif -break_duration_in_seconds <= seconds_left < 0:
         play_session_sound()
         print_break_output(seconds_left)
-        play_sound_after_break = True
+        if break_duration_in_seconds != 0:
+            play_sound_after_break = True
     else:
+        play_session_sound() # Needed in case break duration = 0
         play_break_sound()
         print_break_output_hours(seconds_left)
         
