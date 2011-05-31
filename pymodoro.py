@@ -8,6 +8,7 @@ import time
 import os
 import sys
 import argparse
+import subprocess
 
 from datetime import timedelta
 
@@ -181,17 +182,25 @@ def play_sound(sound_file):
     if enable_sound:
         os.system('aplay -q %s &' % sound_file)
 
-def play_session_sound():
+def notify_end_of_session():
     global play_sound_after_session
     if play_sound_after_session:
         play_sound_after_session = False
         play_sound(session_sound_file)
+        notify(["Worked enough.", "Time for a break!"])
 
-def play_break_sound():
+def notify_end_of_break():
     global play_sound_after_break
     if play_sound_after_break:
         play_sound_after_break = False
         play_sound(break_sound_file)
+        notify(["Break is over.", "Back to work!"])
+
+def notify(strings):
+    try:
+        subprocess.Popen(['notify-send'] + strings)
+    except OSError as e:
+        pass
 
 # Repeat printing the status of our session
 seconds_left = get_seconds_left()
@@ -202,13 +211,13 @@ while True:
         print_session_output(seconds_left)
         play_sound_after_session = True
     elif -break_duration_in_seconds <= seconds_left < 0:
-        play_session_sound()
+        notify_end_of_session()
         print_break_output(seconds_left)
         if break_duration_in_seconds != 0:
             play_sound_after_break = True
     else:
-        play_session_sound() # Needed in case break duration = 0
-        play_break_sound()
+        notify_end_of_session() # Needed in case break duration = 0
+        notify_end_of_break()
         print_break_output_hours(seconds_left)
         
     sys.stdout.flush()
