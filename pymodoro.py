@@ -167,8 +167,12 @@ def print_break_output_hours(seconds):
 
     if minutes <= 60:
         sys.stdout.write("B %02d:%02d min\n" % (minutes, output_seconds))
-    else:
+    elif hours <= 24:
         sys.stdout.write("B %02d:%02d h\n" % (hours, output_minutes))
+    else:
+        days = int(hours/24)
+        output_hours = hours - days * 24
+        sys.stdout.write("B %02d d %02d h\n" % (days, output_hours))
     
 def get_hours(seconds):
     return int(seconds / 3600)
