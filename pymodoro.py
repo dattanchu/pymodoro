@@ -16,7 +16,7 @@ from datetime import timedelta
 
 # Files and Folders
 pymodoro_directory_config = '~/.pymodoro'
-session_file_config = 'pomodoro_session'
+session_file = '~/.pomodoro_session'
 
 # Times
 session_duration_in_seconds = 25 * 60 +1
@@ -38,7 +38,6 @@ break_sound_file_config = 'rimshot.wav'
 
 # constant inferred from configurations
 pymodoro_directory = os.path.expanduser(pymodoro_directory_config)
-session_file = pymodoro_directory + '/' + session_file_config
 session_sound_file = pymodoro_directory + '/' + session_sound_file_config
 break_sound_file = pymodoro_directory + '/' + break_sound_file_config
 
@@ -54,6 +53,7 @@ def set_configuration_from_arguments(args):
     global session_full_mark_character
     global break_full_mark_character
     global empty_mark_character
+    global session_file
     global session_sound_file
     global break_sound_file
     global enable_sound
@@ -77,6 +77,8 @@ def set_configuration_from_arguments(args):
         break_full_mark_character = args.break_full_mark_character
     if args.empty_mark_character:
         empty_mark_character = args.empty_mark_character
+    if args.session_file:
+        session_file = args.session_file
     if args.session_sound_file:
         session_sound_file = args.session_sound_file
     if args.break_sound_file:
@@ -93,22 +95,23 @@ parser.add_argument('-s', '--seconds', action='store_true', help='Changes format
 parser.add_argument('session_duration', action='store', nargs='?', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='POMODORO DURATION')
 parser.add_argument('break_duration', action='store', nargs='?', type=int, help='Break duration in minutes (default: 5).', metavar='BREAK DURATION')
 
-parser.add_argument('-b', '--no-break', action='store_true', help='No break sound.', dest='no_break')
+parser.add_argument('-f', '--file', action='store', help='Pomodoro session file (default: ~/.pomodoro_session).', metavar='PATH', dest='session_file')
+parser.add_argument('-n', '--no-break', action='store_true', help='No break sound.', dest='no_break')
 
 parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds')
 parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks')
 
-parser.add_argument('-fp', '--full-pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character')
-parser.add_argument('-fb', '--full-break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character')
+parser.add_argument('-p', '--pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character')
+parser.add_argument('-b', '--break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character')
 parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character')
 
-parser.add_argument('-sp', '--sound-pomodoro', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
-parser.add_argument('-sb', '--sound-break', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
+parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
+parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
 parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
 
 args = parser.parse_args()
 set_configuration_from_arguments(args)
-
+session_file = os.path.expanduser(session_file)
 
 # variables to keep track of sound playing
 play_sound_after_session = False
