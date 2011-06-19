@@ -42,6 +42,9 @@ session_file = pymodoro_directory + '/' + session_file_config
 session_sound_file = pymodoro_directory + '/' + session_sound_file_config
 break_sound_file = pymodoro_directory + '/' + break_sound_file_config
 
+# variables
+last_start_time = 0
+
 def set_configuration_from_arguments(args):
     #print(args)
     global session_duration_in_seconds
@@ -119,10 +122,46 @@ if not os.path.exists(break_sound_file):
 
 def get_seconds_left():
     if os.path.exists(session_file):
+        global last_start_time
         start_time = os.path.getmtime(session_file)
+        if last_start_time != start_time:
+            last_start_time = start_time
+            setup_new_timer()
         return session_duration_in_seconds - time.time() + start_time
     else:
         return
+
+def setup_new_timer():
+    options = read_session_file()
+    if len(options) > 0:
+        set_session_duration(options[0])
+    if len(options) > 1:
+        set_break_duration(options[1])
+
+def read_session_file():
+    f = open(session_file)
+    content = f.readline()
+    f.close()
+    return content.rsplit()
+
+def set_session_duration(session_duration_as_string):
+    global session_duration_in_seconds
+    session_duration_as_integer = convert_string_to_int(session_duration_as_string)
+    if session_duration_as_integer != -1:
+        session_duration_in_seconds = session_duration_as_integer * 60
+
+def convert_string_to_int(string):
+    if not string.isdigit():
+        #print("Session File may only contain digits!")
+        return -1
+    else:
+        return int(string)
+
+def set_break_duration(break_duration_as_string):
+    global break_duration_in_seconds
+    break_duration_as_integer = convert_string_to_int(break_duration_as_string)
+    if break_duration_as_integer != -1:
+        break_duration_in_seconds = break_duration_as_integer * 60
 
 def print_session_output(seconds_left):
     print_output("P", session_duration_in_seconds, seconds_left, session_full_mark_character)
