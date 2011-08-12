@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: latin-1 -*-
 # authors: Dat Chu <dattanchu@gmail.com>
 #          Dominik Mayer <dominik.mayer@gmail.com>
 # Prerequisite
@@ -119,9 +120,9 @@ play_sound_after_break = False
 
 # sanity check
 if not os.path.exists(session_sound_file):
-    print("Error: Cannot find sound file %s" % sound_file)
+    print("Error: Cannot find sound file %s" % session_sound_file)
 if not os.path.exists(break_sound_file):
-    print("Error: Cannot find sound file %s" % sound_file)
+    print("Error: Cannot find sound file %s" % break_sound_file)
 
 def get_seconds_left():
     if os.path.exists(session_file):
