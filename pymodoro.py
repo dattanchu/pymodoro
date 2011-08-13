@@ -89,41 +89,6 @@ def set_configuration_from_arguments(args):
     if args.no_break:
         break_duration_in_seconds = 0
 
-# Parse command line arguments
-parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
-
-parser.add_argument('-s', '--seconds', action='store_true', help='Changes format of input times from minutes to seconds.', dest='durations_in_seconds')
-parser.add_argument('session_duration', action='store', nargs='?', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='POMODORO DURATION')
-parser.add_argument('break_duration', action='store', nargs='?', type=int, help='Break duration in minutes (default: 5).', metavar='BREAK DURATION')
-
-parser.add_argument('-f', '--file', action='store', help='Pomodoro session file (default: ~/.pomodoro_session).', metavar='PATH', dest='session_file')
-parser.add_argument('-n', '--no-break', action='store_true', help='No break sound.', dest='no_break')
-
-parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds')
-parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks')
-
-parser.add_argument('-p', '--pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character')
-parser.add_argument('-b', '--break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character')
-parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character')
-
-parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
-parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
-parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
-
-args = parser.parse_args()
-set_configuration_from_arguments(args)
-session_file = os.path.expanduser(session_file)
-
-# variables to keep track of sound playing
-play_sound_after_session = False
-play_sound_after_break = False
-
-# sanity check
-if not os.path.exists(session_sound_file):
-    print("Error: Cannot find sound file %s" % session_sound_file)
-if not os.path.exists(break_sound_file):
-    print("Error: Cannot find sound file %s" % break_sound_file)
-
 def get_seconds_left():
     if os.path.exists(session_file):
         global last_start_time
@@ -249,26 +214,62 @@ def notify(strings):
     except OSError as e:
         pass
 
-# Repeat printing the status of our session
-seconds_left = get_seconds_left()
-while True:
-    if seconds_left == None:
-        sys.stdout.write("P —\n")
-    elif 0 < seconds_left:
-        print_session_output(seconds_left)
-        play_sound_after_session = True
-    elif -break_duration_in_seconds <= seconds_left < 0:
-        notify_end_of_session()
-        print_break_output(seconds_left)
-        if break_duration_in_seconds != 0:
-            play_sound_after_break = True
-    else:
-        notify_end_of_session() # Needed in case break duration = 0
-        notify_end_of_break()
-        print_break_output_hours(seconds_left)
-        
-    sys.stdout.flush()
-    
-    time.sleep(update_interval_in_seconds)
+if __name__ == "__main__":
+# Parse command line arguments
+    parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
+    parser.add_argument('-s', '--seconds', action='store_true', help='Changes format of input times from minutes to seconds.', dest='durations_in_seconds')
+    parser.add_argument('session_duration', action='store', nargs='?', type=int, help='Pomodoro duration in minutes (default: 25).', metavar='POMODORO DURATION')
+    parser.add_argument('break_duration', action='store', nargs='?', type=int, help='Break duration in minutes (default: 5).', metavar='BREAK DURATION')
+
+    parser.add_argument('-f', '--file', action='store', help='Pomodoro session file (default: ~/.pomodoro_session).', metavar='PATH', dest='session_file')
+    parser.add_argument('-n', '--no-break', action='store_true', help='No break sound.', dest='no_break')
+
+    parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds')
+    parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks')
+
+    parser.add_argument('-p', '--pomodoro', action='store', help='Pomodoro full mark characters (default: #).', metavar='CHARACTER', dest='session_full_mark_character')
+    parser.add_argument('-b', '--break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character')
+    parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character')
+
+    parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
+    parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
+    parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
+
+    args = parser.parse_args()
+    set_configuration_from_arguments(args)
+    session_file = os.path.expanduser(session_file)
+
+# variables to keep track of sound playing
+    play_sound_after_session = False
+    play_sound_after_break = False
+
+# sanity check
+    if not os.path.exists(session_sound_file):
+        print("Error: Cannot find sound file %s" % session_sound_file)
+    if not os.path.exists(break_sound_file):
+        print("Error: Cannot find sound file %s" % break_sound_file)
+
+# Repeat printing the status of our session
     seconds_left = get_seconds_left()
+    while True:
+        if seconds_left == None:
+            sys.stdout.write("P —\n")
+        elif 0 < seconds_left:
+            print_session_output(seconds_left)
+            play_sound_after_session = True
+        elif -break_duration_in_seconds <= seconds_left < 0:
+            notify_end_of_session()
+            print_break_output(seconds_left)
+            if break_duration_in_seconds != 0:
+                play_sound_after_break = True
+        else:
+            notify_end_of_session() # Needed in case break duration = 0
+            notify_end_of_break()
+            print_break_output_hours(seconds_left)
+
+        sys.stdout.flush()
+
+        time.sleep(update_interval_in_seconds)
+
+        seconds_left = get_seconds_left()
