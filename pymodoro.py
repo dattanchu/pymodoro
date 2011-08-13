@@ -157,9 +157,9 @@ def get_output_seconds(seconds):
 
 def print_progress_bar(duration_in_seconds, seconds, full_mark_character):
     seconds_per_mark = (duration_in_seconds / total_number_of_marks)
-    number_of_full_marks = round(seconds / seconds_per_mark)
+    number_of_full_marks = int(round(seconds / seconds_per_mark))
     return print_full_marks(number_of_full_marks, full_mark_character) + print_empty_marks(total_number_of_marks - number_of_full_marks)
-    
+
 def print_full_marks(number_of_full_marks, full_mark_character):
     return full_mark_character * number_of_full_marks
 
@@ -181,7 +181,7 @@ def print_break_output_hours(seconds):
         days = int(hours/24)
         output_hours = hours - days * 24
         sys.stdout.write("B %02d d %02d h\n" % (days, output_hours))
-    
+
 def get_hours(seconds):
     return int(seconds / 3600)
 
