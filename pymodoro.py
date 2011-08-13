@@ -214,7 +214,7 @@ def notify(strings):
     except OSError as e:
         pass
 
-if __name__ == "__main__":
+def main():
 # Parse command line arguments
     parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
@@ -273,3 +273,6 @@ if __name__ == "__main__":
         time.sleep(update_interval_in_seconds)
 
         seconds_left = get_seconds_left()
+
+
+if __name__ == "__main__": main()
