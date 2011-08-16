@@ -215,7 +215,11 @@ def notify(strings):
         pass
 
 def main():
-# Parse command line arguments
+    # Parse command line arguments
+    global session_file
+    global play_sound_after_session
+    global play_sound_after_break
+
     parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
     parser.add_argument('-s', '--seconds', action='store_true', help='Changes format of input times from minutes to seconds.', dest='durations_in_seconds')
