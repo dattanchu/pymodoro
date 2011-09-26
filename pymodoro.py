@@ -25,7 +25,7 @@ break_duration_in_seconds = 5 * 60
 update_interval_in_seconds = 1
 
 # Progress Bar
-total_number_of_marks = 0
+total_number_of_marks = 10
 session_full_mark_character = '#'
 break_full_mark_character = '|'
 empty_mark_character = '·'
