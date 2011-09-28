@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 # authors: Dat Chu <dattanchu@gmail.com>
 #          Dominik Mayer <dominik.mayer@gmail.com>
 # Prerequisite
@@ -146,7 +146,8 @@ def print_output(description, duration_in_seconds, seconds, full_mark_character)
     minutes = get_minutes(seconds)
     output_seconds = get_output_seconds(seconds)
     progress_bar = print_progress_bar(duration_in_seconds, seconds, full_mark_character)
-    sys.stdout.write(description + " %s %02d:%02d\n" % (progress_bar, minutes, output_seconds))
+    output = description + "%s %02d:%02d" % (progress_bar, minutes, output_seconds)
+    sys.stdout.write(output+"\n")
 
 def get_minutes(seconds):
     return int(seconds / 60)
@@ -156,9 +157,14 @@ def get_output_seconds(seconds):
     return int(seconds - minutes * 60)
 
 def print_progress_bar(duration_in_seconds, seconds, full_mark_character):
-    seconds_per_mark = (duration_in_seconds / total_number_of_marks)
-    number_of_full_marks = int(round(seconds / seconds_per_mark))
-    return print_full_marks(number_of_full_marks, full_mark_character) + print_empty_marks(total_number_of_marks - number_of_full_marks)
+    if total_number_of_marks != 0:
+        seconds_per_mark = (duration_in_seconds / total_number_of_marks)
+        number_of_full_marks = int(round(seconds / seconds_per_mark))
+        output = " " + print_full_marks(number_of_full_marks, full_mark_character) \
+            + print_empty_marks(total_number_of_marks - number_of_full_marks)
+    else:
+        output = ""
+    return output
 
 def print_full_marks(number_of_full_marks, full_mark_character):
     return full_mark_character * number_of_full_marks
