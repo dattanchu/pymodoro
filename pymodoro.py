@@ -29,6 +29,7 @@ total_number_of_marks = 10
 session_full_mark_character = '#'
 break_full_mark_character = '|'
 empty_mark_character = '·'
+left_to_right = False
 
 # Sound
 enable_sound = True
@@ -58,6 +59,7 @@ def set_configuration_from_arguments(args):
     global session_sound_file
     global break_sound_file
     global enable_sound
+    global left_to_right
     if args.session_duration:
         if args.durations_in_seconds == True:
             session_duration_in_seconds = args.session_duration
@@ -86,6 +88,8 @@ def set_configuration_from_arguments(args):
         break_sound_file = args.break_sound_file
     if args.silent:
         enable_sound = False
+    if args.left_to_right:
+        left_to_right = True
     if args.no_break:
         break_duration_in_seconds = 0
 
@@ -160,6 +164,9 @@ def print_progress_bar(duration_in_seconds, seconds, full_mark_character):
     if total_number_of_marks != 0:
         seconds_per_mark = (duration_in_seconds / total_number_of_marks)
         number_of_full_marks = int(round(seconds / seconds_per_mark))
+        # Reverse the display order
+        if left_to_right:
+            number_of_full_marks = total_number_of_marks - number_of_full_marks
         output = " " + print_full_marks(number_of_full_marks, full_mark_character) \
             + print_empty_marks(total_number_of_marks - number_of_full_marks)
     else:
@@ -245,6 +252,7 @@ def main():
     parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
     parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
     parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
+    parser.add_argument('-ltr', '--left-to-right', action='store_true', help='Display markers from left to right (incrementing marker instead of decrementing)', dest='left_to_right')
 
     args = parser.parse_args()
     set_configuration_from_arguments(args)
