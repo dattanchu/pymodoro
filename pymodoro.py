@@ -33,8 +33,10 @@ left_to_right = False
 
 # Sound
 enable_sound = True
+enable_tick_sound = False
 session_sound_file_config = 'nokiaring.wav'
 break_sound_file_config = 'rimshot.wav'
+tick_sound_file_config = 'klack.wav'
 
 # —————————————————————————— END CONFIGURATIONS ———————————————————————————
 
@@ -42,6 +44,7 @@ break_sound_file_config = 'rimshot.wav'
 pymodoro_directory = os.path.expanduser(pymodoro_directory_config)
 session_sound_file = pymodoro_directory + '/' + session_sound_file_config
 break_sound_file = pymodoro_directory + '/' + break_sound_file_config
+tick_sound_file = pymodoro_directory + '/' + tick_sound_file_config
 
 # variables
 last_start_time = 0
@@ -58,7 +61,9 @@ def set_configuration_from_arguments(args):
     global session_file
     global session_sound_file
     global break_sound_file
+    global tick_sound_file
     global enable_sound
+    global enable_tick_sound
     global left_to_right
     if args.session_duration:
         if args.durations_in_seconds == True:
@@ -86,8 +91,12 @@ def set_configuration_from_arguments(args):
         session_sound_file = args.session_sound_file
     if args.break_sound_file:
         break_sound_file = args.break_sound_file
+    if args.tick_sound_file:
+        tick_sound_file = args.tick_sound_file
     if args.silent:
         enable_sound = False
+    if args.tick:
+        enable_tick_sound = True
     if args.left_to_right:
         left_to_right = True
     if args.no_break:
@@ -232,6 +241,8 @@ def main():
     global session_file
     global play_sound_after_session
     global play_sound_after_break
+    global tick_sound_file
+    global enable_tick_sound
 
     parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
@@ -251,7 +262,9 @@ def main():
 
     parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
     parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
+    parser.add_argument('-st', '--tick-sound', action='store', help='Ticking sound file (default: klack.wav).', metavar='PATH', dest='tick_sound_file')
     parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
+    parser.add_argument('-t', '--tick', action='store_true', help='Play tick sound at every interval', dest='tick')
     parser.add_argument('-ltr', '--left-to-right', action='store_true', help='Display markers from left to right (incrementing marker instead of decrementing)', dest='left_to_right')
 
     args = parser.parse_args()
@@ -267,6 +280,8 @@ def main():
         print("Error: Cannot find sound file %s" % session_sound_file)
     if not os.path.exists(break_sound_file):
         print("Error: Cannot find sound file %s" % break_sound_file)
+    if not os.path.exists(tick_sound_file):
+        print("Error: Cannot find sound file %s" % tick_sound_file)
 
 # Repeat printing the status of our session
     seconds_left = get_seconds_left()
@@ -276,6 +291,8 @@ def main():
         elif 0 < seconds_left:
             print_session_output(seconds_left)
             play_sound_after_session = True
+            if enable_tick_sound:
+                play_sound(tick_sound_file)
         elif -break_duration_in_seconds <= seconds_left < 0:
             notify_end_of_session()
             print_break_output(seconds_left)
