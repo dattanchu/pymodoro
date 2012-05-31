@@ -16,7 +16,7 @@ from datetime import timedelta
 # ———————————————————————————— CONFIGURATIONS ————————————————————————————
 
 # Files and Folders
-pymodoro_directory_config = '~/.pymodoro'
+pymodoro_directory_config = os.path.dirname(__file__)
 session_file = '~/.pomodoro_session'
 
 # Times
