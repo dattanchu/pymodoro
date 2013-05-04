@@ -44,6 +44,9 @@ session_sound_file_config = 'nokiaring.wav'
 break_sound_file_config = 'rimshot.wav'
 tick_sound_file_config = 'klack.wav'
 
+# Misc
+auto_hide = False
+
 # —————————————————————————— END CONFIGURATIONS ———————————————————————————
 
 # constant inferred from configurations
@@ -59,6 +62,7 @@ def set_configuration_from_arguments(args):
     #print(args)
     global session_duration_in_seconds
     global break_duration_in_seconds
+    global auto_hide
     global update_interval_in_seconds
     global total_number_of_marks
     global session_full_mark_character
@@ -112,6 +116,8 @@ def set_configuration_from_arguments(args):
         left_to_right = True
     if args.no_break:
         break_duration_in_seconds = 0
+    if args.auto_hide:
+        auto_hide = True
     if args.break_prefix:
         break_prefix = args.break_prefix
     if args.break_suffix:
@@ -264,6 +270,7 @@ def main():
     global enable_tick_sound
     global pomodoro_prefix
     global pomodoro_suffix
+    global auto_hide
 
     parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
@@ -273,6 +280,7 @@ def main():
 
     parser.add_argument('-f', '--file', action='store', help='Pomodoro session file (default: ~/.pomodoro_session).', metavar='PATH', dest='session_file')
     parser.add_argument('-n', '--no-break', action='store_true', help='No break sound.', dest='no_break')
+    parser.add_argument('-ah', '--auto-hide', action='store_true', help='Hide output when session file is removed.', dest='auto_hide')
 
     parser.add_argument('-i', '--interval', action='store', type=int, help='Update interval in seconds (default: 1).', metavar='DURATION', dest='update_interval_in_seconds')
     parser.add_argument('-l', '--length', action='store', type=int, help='Bar length in characters (default: 10).', metavar='CHARACTERS', dest='total_number_of_marks')
@@ -312,7 +320,10 @@ def main():
     seconds_left = get_seconds_left()
     while True:
         if seconds_left == None:
-            sys.stdout.write("%s —%s\n" % (pomodoro_prefix, pomodoro_suffix))
+            if auto_hide:
+                sys.stdout.write("\n")
+            else:
+                sys.stdout.write("%s —%s\n" % (pomodoro_prefix, pomodoro_suffix))
         elif 0 < seconds_left:
             print_session_output(seconds_left)
             play_sound_after_session = True
