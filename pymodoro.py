@@ -215,13 +215,13 @@ def print_break_output_hours(seconds):
     output_seconds = get_output_seconds(seconds)
 
     if minutes < 60:
-        sys.stdout.write("B %02d:%02d min\n" % (minutes, output_seconds))
+        sys.stdout.write("%s %02d:%02d min%s\n" % (break_prefix, minutes, output_seconds, break_suffix))
     elif hours < 24:
-        sys.stdout.write("B %02d:%02d h\n" % (hours, output_minutes))
+        sys.stdout.write("%s %02d:%02d h%s\n" % (break_prefix, hours, output_minutes, break_suffix))
     else:
         days = int(hours/24)
         output_hours = hours - days * 24
-        sys.stdout.write("B %02d d %02d h\n" % (days, output_hours))
+        sys.stdout.write("%s %02d d %02d h%s\n" % (break_prefix, days, output_hours, break_suffix))
 
 def get_hours(seconds):
     return int(seconds / 3600)
