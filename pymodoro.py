@@ -13,6 +13,15 @@ import subprocess
 
 from datetime import timedelta
 
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
+config = configparser.RawConfigParser()
+config_dir = os.path.expanduser('~/.config/pymodoro')
+config_file = os.path.join(config_dir, 'config')
+
 # ———————————————————————————— CONFIGURATIONS ————————————————————————————
 
 # Files and Folders
@@ -57,6 +66,88 @@ tick_sound_file = pymodoro_directory + '/' + tick_sound_file_config
 
 # variables
 last_start_time = 0
+
+def load_config_file():
+    global session_file
+    global pomodoro_prefix
+    global pomodoro_suffix
+    global break_prefix
+    global break_suffix
+    global auto_hide
+    global enable_sound
+    global enable_tick_sound
+    global left_to_right
+    global total_number_of_marks
+    global session_full_mark_character
+    global break_full_mark_character
+    global empty_mark_character
+
+    if not os.path.exists(config_file):
+        create_config_file()
+
+    config.read(config_file)
+
+    session_file = config_get_quoted_string('General', 'session')
+    auto_hide = config.getboolean('General', 'autohide')
+
+    pomodoro_prefix = config_get_quoted_string('Labels', 'pomodoro_prefix')
+    pomodoro_suffix = config_get_quoted_string('Labels', 'pomodoro_suffix')
+    break_prefix = config_get_quoted_string('Labels', 'break_prefix')
+    break_suffix = config_get_quoted_string('Labels', 'break_suffix')
+
+    left_to_right = config.getboolean('Progress Bar', 'left_to_right')
+    total_number_of_marks = config.getint('Progress Bar', 'total_marks')
+    session_full_mark_character = config_get_quoted_string('Progress Bar', 'session_character')
+    break_full_mark_character = config_get_quoted_string('Progress Bar', 'break_character')
+    empty_mark_character = config_get_quoted_string('Progress Bar', 'empty_character')
+
+    enable_sound = config.getboolean('Sound', 'enable')
+    enable_tick_sound = config.getboolean('Sound', 'tick')
+
+
+def create_config_file():
+    config.add_section('General')
+    config.set('General', 'autohide', str(auto_hide).lower())
+    config_set_quoted_string('General', 'session', session_file)
+
+    config.add_section('Labels')
+    config_set_quoted_string('Labels', 'pomodoro_prefix', pomodoro_prefix)
+    config_set_quoted_string('Labels', 'pomodoro_suffix', pomodoro_suffix)
+    config_set_quoted_string('Labels', 'break_prefix', break_prefix)
+    config_set_quoted_string('Labels', 'break_suffix', break_suffix)
+
+    config.add_section('Progress Bar')
+    config.set('Progress Bar', 'left_to_right', str(left_to_right).lower())
+    config.set('Progress Bar', 'total_marks', total_number_of_marks)
+    config_set_quoted_string('Progress Bar', 'session_character', session_full_mark_character)
+    config_set_quoted_string('Progress Bar', 'break_character', break_full_mark_character)
+    config_set_quoted_string('Progress Bar', 'empty_character', empty_mark_character)
+
+    config.add_section('Sound')
+    config.set('Sound', 'enable', str(enable_sound).lower())
+    config.set('Sound', 'tick', str(enable_tick_sound).lower())
+
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    with open(config_file, 'wb') as configfile:
+        config.write(configfile)
+
+
+def config_set_quoted_string(section, option, value):
+    """
+    Surround this string option in double quotes so whitespace can be included.
+    """
+    value = '"' + str(value) + '"'
+    config.set(section, option, value)
+
+
+def config_get_quoted_string(section, option):
+    """
+    Remove doublequotes from an string option.
+    """
+    return config.get(section, option).strip('"')
+
 
 def set_configuration_from_arguments(args):
     #print(args)
@@ -271,6 +362,8 @@ def main():
     global pomodoro_prefix
     global pomodoro_suffix
     global auto_hide
+
+    load_config_file()
 
     parser = argparse.ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
