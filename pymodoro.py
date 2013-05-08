@@ -208,16 +208,19 @@ class Config(object):
         if args.pomodoro_suffix:
             self.pomodoro_suffix = args.pomodoro_suffix
 
-
 class Pymodoro(object):
+
+    IDLE_STATE = 'IDLE'
+    ACTIVE_STATE = 'ACTIVE'
+    BREAK_STATE = 'BREAK'
+    WAIT_STATE = 'WAIT'
 
     def __init__(self):
         self.config = Config()
         self.session = os.path.expanduser(self.config.session_file)
         self.last_start_time = 0
-
-        self.play_sound_after_session = False
-        self.play_sound_after_break = False
+        self.running = True
+        self.state = self.IDLE_STATE
 
     def run(self):
         """
@@ -226,32 +229,80 @@ class Pymodoro(object):
         Print the current output after the specified interval.
 
         """
-        seconds_left = self.get_seconds_left()
-        while True:
-            if seconds_left is None:
+        while self.running:
+
+            self.update_state()
+            seconds_left = self.get_seconds_left()
+
+            if self.state == self.IDLE_STATE:
+
                 if self.config.auto_hide:
                     sys.stdout.write("\n")
                 else:
                     sys.stdout.write("%s —%s\n" % (self.config.pomodoro_prefix,
                                                      self.config.pomodoro_suffix))
-            elif 0 < seconds_left:
+
+            elif self.state == self.ACTIVE_STATE:
                 self.print_session_output(seconds_left)
-                self.play_sound_after_session = True
                 if self.config.enable_tick_sound:
                     self.play_sound(self.config.tick_sound_file)
-            elif -self.config.break_duration_in_seconds <= seconds_left < 0:
-                self.end_of_session()
+
+            elif self.state == self.BREAK_STATE:
                 self.print_break_output(seconds_left)
-                if self.config.break_duration_in_seconds != 0:
-                    self.play_sound_after_break = True
-            else:
-                self.end_of_session()  # Needed in case break duration = 0
-                self.end_of_break()
+
+            elif self.state == self.WAIT_STATE:
                 self.print_break_output_hours(seconds_left)
 
             sys.stdout.flush()
             time.sleep(self.config.update_interval_in_seconds)
-            seconds_left = self.get_seconds_left()
+
+    def update_state(self):
+        """
+        Update the current state determined by timings.
+
+        """
+        current_state = self.state
+        seconds_left = self.get_seconds_left()
+        break_duration = self.config.break_duration_in_seconds
+        break_elapsed = abs(seconds_left)
+
+        if seconds_left is None:
+            next_state = self.IDLE_STATE
+        elif seconds_left > 0:
+            next_state = self.ACTIVE_STATE
+        elif break_elapsed <= break_duration:
+            next_state = self.BREAK_STATE
+        else:
+            next_state = self.WAIT_STATE
+
+        if next_state is not current_state:
+            self.send_notifications(next_state)
+            self.state = next_state
+
+    def send_notifications(self, next_state):
+        """
+        Send appropriate notifications when leaving a state.
+
+        """
+        current_state = self.state
+        notification = None
+        sound = None
+
+        if current_state == self.ACTIVE_STATE:
+            if next_state == self.BREAK_STATE:
+                sound = self.config.session_sound_file
+                notification = ["Worked enough.", "Time for a break!"]
+
+        if current_state == self.BREAK_STATE:
+            if next_state == self.WAIT_STATE:
+                sound = self.config.break_sound_file
+                notification = ["Break is over.", "Back to work!"]
+
+        if notification:
+            self.notify(notification)
+
+        if sound:
+            self.play_sound(sound)
 
     def get_seconds_left(self):
         """Return seconds remaining in the current session."""
@@ -388,20 +439,6 @@ class Pymodoro(object):
             script_path = self.config.script_path
             sound_path = os.path.join(script_path, sound_file)
             os.system('aplay -q %s &' % sound_path)
-
-    def end_of_session(self):
-        """Play sound alert and notify when the session is over."""
-        if self.play_sound_after_session:
-            self.play_sound_after_session = False
-            self.play_sound(self.config.session_sound_file)
-            self.notify(["Worked enough.", "Time for a break!"])
-
-    def end_of_break(self):
-        """Play sound alert and notify when the break is over."""
-        if self.play_sound_after_break:
-            self.play_sound_after_break = False
-            self.play_sound(self.config.break_sound_file)
-            self.notify(["Break is over.", "Back to work!"])
 
     def notify(self, strings):
         """ Send a desktop notification."""
