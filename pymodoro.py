@@ -18,17 +18,15 @@ except ImportError:
 
 
 class Config(object):
+    """Load config from defaults, file and arguments."""
 
     def __init__(self):
+        self.load_defaults()
+        self.load_from_file()
+        self.load_from_args()
 
+    def load_defaults(self):
         self.script_path = self._get_script_path()
-        self.set_default_values()
-        self.get_from_file()
-        self.get_from_arguments()
-
-    def set_default_values(self):
-
-        # Default Config Values
         self.session_file = '~/.pomodoro_session'
         self.auto_hide = False
 
@@ -57,20 +55,19 @@ class Config(object):
         self.break_sound_file = 'rimshot.wav'
         self.tick_sound_file = 'klack.wav'
 
-    def get_from_file(self):
+    def load_from_file(self):
         self._parser = configparser.RawConfigParser()
         self._dir = os.path.expanduser('~/.config/pymodoro')
         self._file = os.path.join(self._dir, 'config')
-        self.load_config_file()
+        self._load_config_file()
 
     def _get_script_path(self):
         module_path = os.path.realpath(__file__)
         return os.path.dirname(module_path)
 
-    def load_config_file(self):
-
+    def _load_config_file(self):
         if not os.path.exists(self._file):
-            self.create_config_file()
+            self._create_config_file()
 
         self._parser.read(self._file)
 
@@ -91,8 +88,7 @@ class Config(object):
         self.enable_sound = self._parser.getboolean('Sound', 'enable')
         self.enable_tick_sound = self._parser.getboolean('Sound', 'tick')
 
-    def create_config_file(self):
-
+    def _create_config_file(self):
         self._parser.add_section('General')
         self._parser.set('General', 'autohide', str(self.auto_hide).lower())
         self._config_set_quoted_string('General', 'session', self.session_file)
@@ -134,8 +130,7 @@ class Config(object):
         """
         return self._parser.get(section, option).strip('"')
 
-    def get_from_arguments(self):
-
+    def load_from_args(self):
         arg_parser = ArgumentParser(description='Create a Pomodoro display for a status bar.')
 
         arg_parser.add_argument('-s', '--seconds', action='store_true', help='Changes format of input times from minutes to seconds.', dest='durations_in_seconds')
@@ -213,30 +208,115 @@ class Config(object):
         if args.pomodoro_suffix:
             self.pomodoro_suffix = args.pomodoro_suffix
 
-
 class Pymodoro(object):
 
-    def __init__(self):
+    IDLE_STATE = 'IDLE'
+    ACTIVE_STATE = 'ACTIVE'
+    BREAK_STATE = 'BREAK'
+    WAIT_STATE = 'WAIT'
 
+    def __init__(self):
         self.config = Config()
         self.session = os.path.expanduser(self.config.session_file)
         self.last_start_time = 0
+        self.running = True
+        self.state = self.IDLE_STATE
 
-        # variables to keep track of sound playing
-        self.play_sound_after_session = False
-        self.play_sound_after_break = False
+    def run(self):
+        """
+        Main loop.
+
+        Print the current output after the specified interval.
+
+        """
+        while self.running:
+
+            self.update_state()
+            seconds_left = self.get_seconds_left()
+
+            if self.state == self.IDLE_STATE:
+
+                if self.config.auto_hide:
+                    sys.stdout.write("\n")
+                else:
+                    sys.stdout.write("%s —%s\n" % (self.config.pomodoro_prefix,
+                                                     self.config.pomodoro_suffix))
+
+            elif self.state == self.ACTIVE_STATE:
+                self.print_session_output(seconds_left)
+                if self.config.enable_tick_sound:
+                    self.play_sound(self.config.tick_sound_file)
+
+            elif self.state == self.BREAK_STATE:
+                self.print_break_output(seconds_left)
+
+            elif self.state == self.WAIT_STATE:
+                self.print_break_output_hours(seconds_left)
+
+            sys.stdout.flush()
+            time.sleep(self.config.update_interval_in_seconds)
+
+    def update_state(self):
+        """
+        Update the current state determined by timings.
+
+        """
+        current_state = self.state
+        seconds_left = self.get_seconds_left()
+        break_duration = self.config.break_duration_in_seconds
+        break_elapsed = abs(seconds_left)
+
+        if seconds_left is None:
+            next_state = self.IDLE_STATE
+        elif seconds_left > 0:
+            next_state = self.ACTIVE_STATE
+        elif break_elapsed <= break_duration:
+            next_state = self.BREAK_STATE
+        else:
+            next_state = self.WAIT_STATE
+
+        if next_state is not current_state:
+            self.send_notifications(next_state)
+            self.state = next_state
+
+    def send_notifications(self, next_state):
+        """
+        Send appropriate notifications when leaving a state.
+
+        """
+        current_state = self.state
+        notification = None
+        sound = None
+
+        if current_state == self.ACTIVE_STATE:
+            if next_state == self.BREAK_STATE:
+                sound = self.config.session_sound_file
+                notification = ["Worked enough.", "Time for a break!"]
+
+        if current_state == self.BREAK_STATE:
+            if next_state == self.WAIT_STATE:
+                sound = self.config.break_sound_file
+                notification = ["Break is over.", "Back to work!"]
+
+        if notification:
+            self.notify(notification)
+
+        if sound:
+            self.play_sound(sound)
 
     def get_seconds_left(self):
+        """Return seconds remaining in the current session."""
         if os.path.exists(self.session):
             start_time = os.path.getmtime(self.session)
             if self.last_start_time != start_time:
                 self.last_start_time = start_time
-                self.setup_new_timer()
+                self.set_durations()
             return self.config.session_duration_in_seconds - time.time() + start_time
         else:
             return
 
-    def setup_new_timer(self):
+    def set_durations(self):
+        """Set durations from session values if available."""
         options = self.read_session_file()
         if len(options) > 0:
             self.set_session_duration(options[0])
@@ -244,6 +324,7 @@ class Pymodoro(object):
             self.set_break_duration(options[1])
 
     def read_session_file(self):
+        """Get pomodoro and break durations from session as a list."""
         f = open(self.session)
         content = f.readline()
         f.close()
@@ -261,6 +342,7 @@ class Pymodoro(object):
             return int(string)
 
     def set_break_duration(self, break_duration_as_string):
+        """Modify break duration."""
         break_duration_as_integer = self.convert_string_to_int(break_duration_as_string)
         if break_duration_as_integer != -1:
             self.config.break_duration_in_seconds = break_duration_as_integer * 60
@@ -290,9 +372,6 @@ class Pymodoro(object):
         output = description + "%s %02d:%02d" % (progress_bar, minutes, output_seconds) + suffix
         sys.stdout.write(output + "\n")
 
-    def get_minutes(self, seconds):
-        return int(seconds / 60)
-
     def get_output_seconds(self, seconds):
         minutes = self.get_minutes(seconds)
         return int(seconds - minutes * 60)
@@ -304,16 +383,16 @@ class Pymodoro(object):
             # Reverse the display order
             if self.config.left_to_right:
                 number_of_full_marks = self.config.total_number_of_marks - number_of_full_marks
-            output = " " + self.print_full_marks(number_of_full_marks, full_mark_character) \
-                + self.print_empty_marks(self.config.total_number_of_marks - number_of_full_marks)
+            output = " " + self.get_full_marks(number_of_full_marks, full_mark_character) \
+                + self.get_empty_marks(self.config.total_number_of_marks - number_of_full_marks)
         else:
             output = ""
         return output
 
-    def print_full_marks(self, number_of_full_marks, full_mark_character):
+    def get_full_marks(self, number_of_full_marks, full_mark_character):
         return full_mark_character * number_of_full_marks
 
-    def print_empty_marks(self, number_of_empty_marks):
+    def get_empty_marks(self, number_of_empty_marks):
         return self.config.empty_mark_character * number_of_empty_marks
 
     def print_break_output_hours(self, seconds):
@@ -342,7 +421,12 @@ class Pymodoro(object):
                                                        self.config.break_suffix))
 
     def get_hours(self, seconds):
+        """Convert seconds to hours."""
         return int(seconds / 3600)
+
+    def get_minutes(self, seconds):
+        """Convert seconds to minutes."""
+        return int(seconds / 60)
 
     def get_output_minutes(self, seconds):
         hours = self.get_hours(seconds)
@@ -350,58 +434,18 @@ class Pymodoro(object):
         return int(minutes - hours * 60)
 
     def play_sound(self, sound_file):
+        """Play specified sound file with aplay."""
         if self.config.enable_sound:
             script_path = self.config.script_path
             sound_path = os.path.join(script_path, sound_file)
             os.system('aplay -q %s &' % sound_path)
 
-    def notify_end_of_session(self):
-        if self.play_sound_after_session:
-            self.play_sound_after_session = False
-            self.play_sound(self.config.session_sound_file)
-            self.notify(["Worked enough.", "Time for a break!"])
-
-    def notify_end_of_break(self):
-        if self.play_sound_after_break:
-            self.play_sound_after_break = False
-            self.play_sound(self.config.break_sound_file)
-            self.notify(["Break is over.", "Back to work!"])
-
     def notify(self, strings):
+        """ Send a desktop notification."""
         try:
             Popen(['notify-send'] + strings)
         except OSError:
             pass
-
-    def run(self):
-
-        # Repeat printing the status of our session
-        seconds_left = self.get_seconds_left()
-        while True:
-            if seconds_left is None:
-                if self.config.auto_hide:
-                    sys.stdout.write("\n")
-                else:
-                    sys.stdout.write("%s —%s\n" % (self.config.pomodoro_prefix,
-                                                     self.config.pomodoro_suffix))
-            elif 0 < seconds_left:
-                self.print_session_output(seconds_left)
-                self.play_sound_after_session = True
-                if self.config.enable_tick_sound:
-                    self.play_sound(self.config.tick_sound_file)
-            elif -self.config.break_duration_in_seconds <= seconds_left < 0:
-                self.notify_end_of_session()
-                self.print_break_output(seconds_left)
-                if self.config.break_duration_in_seconds != 0:
-                    self.play_sound_after_break = True
-            else:
-                self.notify_end_of_session()  # Needed in case break duration = 0
-                self.notify_end_of_break()
-                self.print_break_output_hours(seconds_left)
-
-            sys.stdout.flush()
-            time.sleep(self.config.update_interval_in_seconds)
-            seconds_left = self.get_seconds_left()
 
 
 if __name__ == "__main__":
