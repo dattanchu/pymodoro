@@ -27,6 +27,7 @@ class Config(object):
 
     def load_defaults(self):
         self.script_path = self._get_script_path()
+        self.data_path = os.path.join(self.script_path, 'data')
         self.session_file = '~/.pomodoro_session'
         self.auto_hide = False
 
@@ -51,9 +52,9 @@ class Config(object):
         # Sound
         self.enable_sound = True
         self.enable_tick_sound = False
-        self.session_sound_file = 'nokiaring.wav'
-        self.break_sound_file = 'rimshot.wav'
-        self.tick_sound_file = 'klack.wav'
+        self.session_sound_file = os.path.join(self.data_path, 'session.wav')
+        self.break_sound_file = os.path.join(self.data_path, 'break.wav')
+        self.tick_sound_file = os.path.join(self.data_path, 'tick.wav')
 
     def load_from_file(self):
         self._parser = configparser.RawConfigParser()
@@ -443,9 +444,7 @@ class Pymodoro(object):
     def play_sound(self, sound_file):
         """Play specified sound file with aplay."""
         if self.config.enable_sound:
-            script_path = self.config.script_path
-            sound_path = os.path.join(script_path, sound_file)
-            os.system('aplay -q %s &' % sound_path)
+            os.system('aplay -q %s &' % sound_file)
 
     def notify(self, strings):
         """ Send a desktop notification."""
