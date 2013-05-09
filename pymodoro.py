@@ -264,7 +264,7 @@ class Pymodoro(object):
         current_state = self.state
         seconds_left = self.get_seconds_left()
         break_duration = self.config.break_duration_in_seconds
-        break_elapsed = abs(seconds_left)
+        break_elapsed = self.get_break_elapsed(seconds_left)
 
         if seconds_left is None:
             next_state = self.IDLE_STATE
@@ -314,6 +314,13 @@ class Pymodoro(object):
             return self.config.session_duration_in_seconds - time.time() + start_time
         else:
             return
+
+    def get_break_elapsed(self, seconds_left):
+        """Return the break elapsed in seconds"""
+        break_elapsed = 0
+        if seconds_left:
+            break_elapsed = abs(seconds_left)
+        return break_elapsed
 
     def set_durations(self):
         """Set durations from session values if available."""
