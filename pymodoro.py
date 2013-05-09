@@ -454,6 +454,9 @@ class Pymodoro(object):
             pass
 
 
-if __name__ == "__main__":
+def main():
     pymodoro = Pymodoro()
     pymodoro.run()
+
+if __name__ == "__main__":
+    main()
