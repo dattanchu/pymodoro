@@ -44,9 +44,9 @@ class Config(object):
         self.left_to_right = False
 
         # Prefixes
-        self.break_prefix = 'B'
+        self.break_prefix = 'B '
         self.break_suffix = ''
-        self.pomodoro_prefix = 'P'
+        self.pomodoro_prefix = 'P '
         self.pomodoro_suffix = ''
 
         # Sound
@@ -219,49 +219,22 @@ class Pymodoro(object):
     def __init__(self):
         self.config = Config()
         self.session = os.path.expanduser(self.config.session_file)
-        self.last_start_time = 0
+        self.set_durations()
         self.running = True
-        self.state = self.IDLE_STATE
 
     def run(self):
-        """
-        Main loop.
-
-        Print the current output after the specified interval.
-
-        """
+        """ Start main loop."""
         while self.running:
-
             self.update_state()
-            seconds_left = self.get_seconds_left()
-
-            if self.state == self.IDLE_STATE:
-
-                if self.config.auto_hide:
-                    sys.stdout.write("\n")
-                else:
-                    sys.stdout.write("%s —%s\n" % (self.config.pomodoro_prefix,
-                                                     self.config.pomodoro_suffix))
-
-            elif self.state == self.ACTIVE_STATE:
-                self.print_session_output(seconds_left)
-                if self.config.enable_tick_sound:
-                    self.play_sound(self.config.tick_sound_file)
-
-            elif self.state == self.BREAK_STATE:
-                self.print_break_output(seconds_left)
-
-            elif self.state == self.WAIT_STATE:
-                self.print_break_output_hours(seconds_left)
-
-            sys.stdout.flush()
-            time.sleep(self.config.update_interval_in_seconds)
+            self.print_output()
+            self.tick_sound()
+            self.wait()
 
     def update_state(self):
-        """
-        Update the current state determined by timings.
+        """ Update the current state determined by timings."""
+        if not hasattr(self, 'state'):
+            self.state = self.IDLE_STATE
 
-        """
         current_state = self.state
         seconds_left = self.get_seconds_left()
         break_duration = self.config.break_duration_in_seconds
@@ -271,7 +244,7 @@ class Pymodoro(object):
             next_state = self.IDLE_STATE
         elif seconds_left > 0:
             next_state = self.ACTIVE_STATE
-        elif break_elapsed <= break_duration:
+        elif break_elapsed < break_duration:
             next_state = self.BREAK_STATE
         else:
             next_state = self.WAIT_STATE
@@ -281,10 +254,7 @@ class Pymodoro(object):
             self.state = next_state
 
     def send_notifications(self, next_state):
-        """
-        Send appropriate notifications when leaving a state.
-
-        """
+        """Send appropriate notifications when leaving a state."""
         current_state = self.state
         notification = None
         sound = None
@@ -305,16 +275,91 @@ class Pymodoro(object):
         if sound:
             self.play_sound(sound)
 
+    def print_output(self):
+        """Print output determined by the current state."""
+        auto_hide = self.config.auto_hide
+        seconds_left = self.get_seconds_left()
+
+        prefix = ""
+        progress = ""
+        timer = ""
+        suffix = ""
+
+        format = "%s%s%s%s\n"
+
+        if self.state == self.IDLE_STATE and not auto_hide:
+            prefix = self.config.pomodoro_prefix
+            suffix = self.config.pomodoro_suffix
+            progress = "-"
+
+        elif self.state == self.ACTIVE_STATE:
+            duration = self.config.session_duration_in_seconds
+            output_seconds = self.get_output_seconds(seconds_left)
+            output_minutes = self.get_minutes(seconds_left)
+
+            prefix = self.config.pomodoro_prefix
+            suffix = self.config.pomodoro_suffix
+            progress = self.get_progress_bar(duration, seconds_left)
+            timer = "%02d:%02d" % (output_minutes, output_seconds)
+            format = "%s%s %s%s\n"
+
+        elif self.state == self.BREAK_STATE:
+            duration = self.config.break_duration_in_seconds
+            break_seconds = self.get_break_seconds_left(seconds_left)
+            output_seconds = self.get_output_seconds(break_seconds)
+            output_minutes = self.get_minutes(break_seconds)
+
+            prefix = self.config.break_prefix
+            suffix = self.config.break_suffix
+            progress = self.get_progress_bar(duration, break_seconds)
+            timer = "%02d:%02d" % (output_minutes, output_seconds)
+            format = "%s%s %s%s\n"
+
+        elif self.state == self.WAIT_STATE:
+            seconds = -seconds_left
+            minutes = self.get_minutes(seconds)
+            hours = self.get_hours(seconds)
+            days = self.get_days(seconds)
+
+            output_seconds = self.get_output_seconds(seconds)
+            output_minutes = self.get_output_minutes(seconds)
+            output_hours = self.get_output_hours(seconds)
+
+            prefix = self.config.break_prefix
+            suffix = self.config.break_suffix
+
+            if minutes < 60:
+                timer = "%02d:%02d min" % (minutes, output_seconds)
+            elif hours < 24:
+                timer = "%02d:%02d h" % (hours, output_minutes)
+            elif days <= 7:
+                output_hours = hours - days * 24
+                timer = "%02d:%02d d" % (days, output_hours)
+            else:
+                timer = "Over a week"
+
+        sys.stdout.write(format % (prefix, progress, timer, suffix))
+        sys.stdout.flush()
+
+    def wait(self):
+        """Wait for the specified interval."""
+        interval = self.config.update_interval_in_seconds
+        time.sleep(interval)
+
+    def tick_sound(self):
+        """Play the Pomodoro tick sound if enabled."""
+        enabled = self.config.enable_tick_sound
+        if enabled and self.state == self.ACTIVE_STATE:
+            self.play_sound(self.config.tick_sound_file)
+
     def get_seconds_left(self):
         """Return seconds remaining in the current session."""
+        seconds_left = None
+        session_duration = self.config.session_duration_in_seconds
         if os.path.exists(self.session):
             start_time = os.path.getmtime(self.session)
-            if self.last_start_time != start_time:
-                self.last_start_time = start_time
-                self.set_durations()
-            return self.config.session_duration_in_seconds - time.time() + start_time
-        else:
-            return
+            seconds_left = session_duration - time.time() + start_time
+        return seconds_left
 
     def get_break_elapsed(self, seconds_left):
         """Return the break elapsed in seconds"""
@@ -333,9 +378,11 @@ class Pymodoro(object):
 
     def read_session_file(self):
         """Get pomodoro and break durations from session as a list."""
-        f = open(self.session)
-        content = f.readline()
-        f.close()
+        content = ""
+        if os.path.exists(self.session):
+            f = open(self.session)
+            content = f.readline()
+            f.close()
         return content.rsplit()
 
     def set_session_duration(self, session_duration_as_string):
@@ -355,78 +402,40 @@ class Pymodoro(object):
         if break_duration_as_integer != -1:
             self.config.break_duration_in_seconds = break_duration_as_integer * 60
 
-    def print_session_output(self, seconds_left):
-        self.print_output(self.config.pomodoro_prefix,
-                          self.config.session_duration_in_seconds,
-                          seconds_left,
-                          self.config.session_full_mark_character,
-                          self.config.pomodoro_suffix)
-
-    def print_break_output(self, seconds_left):
-        break_seconds_left = self.get_break_seconds_left(seconds_left)
-        self.print_output(self.config.break_prefix,
-                          self.config.break_duration_in_seconds,
-                          break_seconds_left,
-                          self.config.break_full_mark_character,
-                          self.config.break_suffix)
-
     def get_break_seconds_left(self, seconds):
         return self.config.break_duration_in_seconds + seconds
 
-    def print_output(self, description, duration_in_seconds, seconds, full_mark_character, suffix):
-        minutes = self.get_minutes(seconds)
-        output_seconds = self.get_output_seconds(seconds)
-        progress_bar = self.print_progress_bar(duration_in_seconds, seconds, full_mark_character)
-        output = description + "%s %02d:%02d" % (progress_bar, minutes, output_seconds) + suffix
-        sys.stdout.write(output + "\n")
+    def get_progress_bar(self, duration_in_seconds, seconds):
+        """Return progess bar using full and empty characters."""
+        output = ""
+        total_marks = self.config.total_number_of_marks
+        left_to_right = self.config.left_to_right
 
-    def get_output_seconds(self, seconds):
-        minutes = self.get_minutes(seconds)
-        return int(seconds - minutes * 60)
+        full_mark_character = self.config.session_full_mark_character
+        empty_mark_character = self.config.empty_mark_character
 
-    def print_progress_bar(self, duration_in_seconds, seconds, full_mark_character):
-        if self.config.total_number_of_marks != 0:
-            seconds_per_mark = (duration_in_seconds / self.config.total_number_of_marks)
+        if self.state == self.BREAK_STATE:
+            full_mark_character = self.config.break_full_mark_character
+
+        if total_marks:
+            seconds_per_mark = (duration_in_seconds / total_marks)
             number_of_full_marks = int(round(seconds / seconds_per_mark))
+
             # Reverse the display order
-            if self.config.left_to_right:
-                number_of_full_marks = self.config.total_number_of_marks - number_of_full_marks
-            output = " " + self.get_full_marks(number_of_full_marks, full_mark_character) \
-                + self.get_empty_marks(self.config.total_number_of_marks - number_of_full_marks)
-        else:
-            output = ""
+            if left_to_right:
+                number_of_full_marks = total_marks - number_of_full_marks
+
+            number_of_empty_marks = total_marks - number_of_full_marks
+
+            full_marks = full_mark_character * number_of_full_marks
+            empty_marks = empty_mark_character * number_of_empty_marks
+            output = full_marks + empty_marks
+
         return output
 
-    def get_full_marks(self, number_of_full_marks, full_mark_character):
-        return full_mark_character * number_of_full_marks
-
-    def get_empty_marks(self, number_of_empty_marks):
-        return self.config.empty_mark_character * number_of_empty_marks
-
-    def print_break_output_hours(self, seconds):
-        seconds = -seconds
-        minutes = self.get_minutes(seconds)
-        output_minutes = self.get_output_minutes(seconds)
-        hours = self.get_hours(seconds)
-        output_seconds = self.get_output_seconds(seconds)
-
-        if minutes < 60:
-            sys.stdout.write("%s %02d:%02d min%s\n" % (self.config.break_prefix,
-                                                       minutes,
-                                                       output_seconds,
-                                                       self.config.break_suffix))
-        elif hours < 24:
-            sys.stdout.write("%s %02d:%02d h%s\n" % (self.config.break_prefix,
-                                                     hours,
-                                                     output_minutes,
-                                                     self.config.break_suffix))
-        else:
-            days = int(hours / 24)
-            output_hours = hours - days * 24
-            sys.stdout.write("%s %02d d %02d h%s\n" % (self.config.break_prefix,
-                                                       days,
-                                                       output_hours,
-                                                       self.config.break_suffix))
+    def get_days(self, seconds):
+        """Convert seconds to days."""
+        return int(seconds / 86400)
 
     def get_hours(self, seconds):
         """Convert seconds to hours."""
@@ -436,10 +445,22 @@ class Pymodoro(object):
         """Convert seconds to minutes."""
         return int(seconds / 60)
 
+    def get_output_hours(self, seconds):
+        hours = self.get_hours(seconds)
+        days = self.get_days(seconds)
+        output_hours = int(hours - days * 24)
+        return output_hours
+
     def get_output_minutes(self, seconds):
         hours = self.get_hours(seconds)
         minutes = self.get_minutes(seconds)
-        return int(minutes - hours * 60)
+        output_minutes = int(minutes - hours * 60)
+        return output_minutes
+
+    def get_output_seconds(self, seconds):
+        minutes = self.get_minutes(seconds)
+        output_seconds = int(seconds - minutes * 60)
+        return output_seconds
 
     def play_sound(self, sound_file):
         """Play specified sound file with aplay."""
@@ -452,7 +473,6 @@ class Pymodoro(object):
             Popen(['notify-send'] + strings)
         except OSError:
             pass
-
 
 def main():
     pymodoro = Pymodoro()
