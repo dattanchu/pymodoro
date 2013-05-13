@@ -22,6 +22,7 @@ class Config(object):
 
     def __init__(self):
         self.load_defaults()
+        self.load_user_data()
         self.load_from_file()
         self.load_from_args()
 
@@ -55,6 +56,33 @@ class Config(object):
         self.session_sound_file = os.path.join(self.data_path, 'session.wav')
         self.break_sound_file = os.path.join(self.data_path, 'break.wav')
         self.tick_sound_file = os.path.join(self.data_path, 'tick.wav')
+
+    def load_user_data(self):
+        """
+        Custom User Data
+
+        Check the ~/.local/share/pymodoro directory for custom user
+        files. This lets the user provide their own sound files which
+        are used instead of the default ones.
+
+        """
+        self._user_dir = os.path.expanduser('~/.local/share/pymodoro')
+
+        if not os.path.exists(self._user_dir):
+            os.makedirs(self._user_dir)
+
+        # Include any custom user sounds if present
+        user_session_sound = os.path.join(self._user_dir, 'session.wav')
+        user_break_sound = os.path.join(self._user_dir, 'break.wav')
+        user_tick_sound = os.path.join(self._user_dir, 'tick.wav')
+
+        if os.path.exists(user_session_sound):
+            self.session_sound_file = user_session_sound
+        if os.path.exists(user_break_sound):
+            self.break_sound_file = user_break_sound
+        if os.path.exists(user_tick_sound):
+            self.tick_sound_file = user_tick_sound
+
 
     def load_from_file(self):
         self._parser = configparser.RawConfigParser()
@@ -333,7 +361,6 @@ class Pymodoro(object):
             elif hours < 24:
                 timer = "%02d:%02d h" % (hours, output_minutes)
             elif days <= 7:
-                output_hours = hours - days * 24
                 timer = "%02d:%02d d" % (days, output_hours)
             else:
                 timer = "Over a week"
