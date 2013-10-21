@@ -188,6 +188,8 @@ class Config(object):
         arg_parser.add_argument('-pp', '--pomodoro-prefix', action='store', help='String to display before, when we are in a pomodoro. Default to "P". Can be used to format display for dzen.', metavar='POMODORO PREFIX', dest='pomodoro_prefix')
         arg_parser.add_argument('-ps', '--pomodoro-suffix', action='store', help='String to display after, when we are in a pomodoro. Default to "". Can be used to format display for dzen.', metavar='POMODORO SUFFIX', dest='pomodoro_suffix')
 
+        arg_parser.add_argument('-o', '--one-line', action='store_true', help='Print one line of output and quit.', dest='oneline')
+
         args = arg_parser.parse_args()
 
         if args.session_duration:
@@ -237,6 +239,9 @@ class Config(object):
         if args.pomodoro_suffix:
             self.pomodoro_suffix = args.pomodoro_suffix
 
+        if args.oneline:
+            self.enable_only_one_line = True
+
 class Pymodoro(object):
 
     IDLE_STATE = 'IDLE'
@@ -256,7 +261,10 @@ class Pymodoro(object):
             self.update_state()
             self.print_output()
             self.tick_sound()
-            self.wait()
+            if self.config.enable_only_one_line:
+                break
+            else:
+                self.wait()
 
     def update_state(self):
         """ Update the current state determined by timings."""
