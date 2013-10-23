@@ -57,6 +57,9 @@ class Config(object):
         self.break_sound_file = os.path.join(self.data_path, 'break.wav')
         self.tick_sound_file = os.path.join(self.data_path, 'tick.wav')
 
+        # Run until SIGINT or any other interrupts by default.
+        self.enable_only_one_line = False
+
     def load_user_data(self):
         """
         Custom User Data
@@ -102,6 +105,8 @@ class Config(object):
 
         self.session_file = self._config_get_quoted_string('General', 'session')
         self.auto_hide = self._parser.getboolean('General', 'autohide')
+        # Set 'oneline' to True if you want pymodoro to output only one line and exit.
+        self.enable_only_one_line = self._parser.getboolean('General', 'oneline')
 
         self.pomodoro_prefix = self._config_get_quoted_string('Labels', 'pomodoro_prefix')
         self.pomodoro_suffix = self._config_get_quoted_string('Labels', 'pomodoro_suffix')
@@ -117,10 +122,12 @@ class Config(object):
         self.enable_sound = self._parser.getboolean('Sound', 'enable')
         self.enable_tick_sound = self._parser.getboolean('Sound', 'tick')
 
+
     def _create_config_file(self):
         self._parser.add_section('General')
         self._parser.set('General', 'autohide', str(self.auto_hide).lower())
         self._config_set_quoted_string('General', 'session', self.session_file)
+        self._parser.set('General', 'oneline', str(self.enable_only_one_line).lower())
 
         self._parser.add_section('Labels')
         self._config_set_quoted_string('Labels', 'pomodoro_prefix', self.pomodoro_prefix)
