@@ -249,6 +249,9 @@ class Pymodoro(object):
         self.session = os.path.expanduser(self.config.session_file)
         self.set_durations()
         self.running = True
+        # cache last time the session file was touched
+        # to know if the session file contents should be re-read
+        self.last_start_time = 0 
 
     def run(self):
         """ Start main loop."""
@@ -382,9 +385,14 @@ class Pymodoro(object):
     def get_seconds_left(self):
         """Return seconds remaining in the current session."""
         seconds_left = None
-        session_duration = self.config.session_duration_in_seconds
         if os.path.exists(self.session):
             start_time = os.path.getmtime(self.session)
+            if start_time != self.last_start_time :
+                # the session file has been updated
+                # re-read the contents
+                self.set_durations()
+                self.last_start_time = start_time
+            session_duration = self.config.session_duration_in_seconds
             seconds_left = session_duration - time.time() + start_time
         return seconds_left
 
