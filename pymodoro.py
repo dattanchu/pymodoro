@@ -57,6 +57,9 @@ class Config(object):
         self.break_sound_file = os.path.join(self.data_path, 'break.wav')
         self.tick_sound_file = os.path.join(self.data_path, 'tick.wav')
 
+        # Run until SIGINT or any other interrupts by default.
+        self.enable_only_one_line = False
+
     def load_user_data(self):
         """
         Custom User Data
@@ -102,6 +105,8 @@ class Config(object):
 
         self.session_file = self._config_get_quoted_string('General', 'session')
         self.auto_hide = self._parser.getboolean('General', 'autohide')
+        # Set 'oneline' to True if you want pymodoro to output only one line and exit.
+        self.enable_only_one_line = self._parser.getboolean('General', 'oneline')
 
         self.pomodoro_prefix = self._config_get_quoted_string('Labels', 'pomodoro_prefix')
         self.pomodoro_suffix = self._config_get_quoted_string('Labels', 'pomodoro_suffix')
@@ -117,10 +122,12 @@ class Config(object):
         self.enable_sound = self._parser.getboolean('Sound', 'enable')
         self.enable_tick_sound = self._parser.getboolean('Sound', 'tick')
 
+
     def _create_config_file(self):
         self._parser.add_section('General')
         self._parser.set('General', 'autohide', str(self.auto_hide).lower())
         self._config_set_quoted_string('General', 'session', self.session_file)
+        self._parser.set('General', 'oneline', str(self.enable_only_one_line).lower())
 
         self._parser.add_section('Labels')
         self._config_set_quoted_string('Labels', 'pomodoro_prefix', self.pomodoro_prefix)
@@ -188,6 +195,8 @@ class Config(object):
         arg_parser.add_argument('-pp', '--pomodoro-prefix', action='store', help='String to display before, when we are in a pomodoro. Default to "P". Can be used to format display for dzen.', metavar='POMODORO PREFIX', dest='pomodoro_prefix')
         arg_parser.add_argument('-ps', '--pomodoro-suffix', action='store', help='String to display after, when we are in a pomodoro. Default to "". Can be used to format display for dzen.', metavar='POMODORO SUFFIX', dest='pomodoro_suffix')
 
+        arg_parser.add_argument('-o', '--one-line', action='store_true', help='Print one line of output and quit.', dest='oneline')
+
         args = arg_parser.parse_args()
 
         if args.session_duration:
@@ -237,6 +246,9 @@ class Config(object):
         if args.pomodoro_suffix:
             self.pomodoro_suffix = args.pomodoro_suffix
 
+        if args.oneline:
+            self.enable_only_one_line = True
+
 class Pymodoro(object):
 
     IDLE_STATE = 'IDLE'
@@ -256,7 +268,10 @@ class Pymodoro(object):
             self.update_state()
             self.print_output()
             self.tick_sound()
-            self.wait()
+            if self.config.enable_only_one_line:
+                break
+            else:
+                self.wait()
 
     def update_state(self):
         """ Update the current state determined by timings."""

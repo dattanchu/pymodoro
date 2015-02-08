@@ -2,11 +2,20 @@
 
 ## Running
 
-To run, put the files into a new folder called **.pymodoro** inside your home folder. Configure your xmobar to display pymodoro with
+### Xmobar
+
+Put the files into a new folder called **.pymodoro** inside your home folder. Configure your xmobar to display pymodoro with
 
     Run CommandReader "~/.pymodoro/pymodoro.py" "pomodoro"
 
 Then add it to your template.
+
+### Dzen2
+
+Add the following configuration to your Dzen2 configuration file to retrieve the current status of your Pomodoro and paste it in your display.
+
+    ^fg(\#FFFFFF)${execi 10 python ~/.pymodoro/pymodoro.py -o}
+
 
 ## Install
 
@@ -22,7 +31,7 @@ A new Pomodoro -- 25 minutes followed by a break of 5 minutes -- is started by c
 
 If you want to use counters with different times, write them into the session file. The first number specifies the length of the Pomodoro in minutes, the second one the length of the break. Both numbers are optional. Example:
 
-    echo "20 2" > pomodoro_session
+    echo "20 2" > ~/.pomodoro_session
 
 ### Keybindings
 
