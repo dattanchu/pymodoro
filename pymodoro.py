@@ -88,7 +88,12 @@ class Config(object):
 
 
     def load_from_file(self):
-        self._parser = configparser.RawConfigParser()
+        # We need to set the default for oneline in the parser here so
+        # that users migrating from an older version of pymodoro who
+        # have an old config file that does not contain the oneline
+        # option don't crash when the parser tries to read it.
+        defaults = {'oneline': str(self.enable_only_one_line).lower()}
+        self._parser = configparser.RawConfigParser(defaults)
         self._dir = os.path.expanduser('~/.config/pymodoro')
         self._file = os.path.join(self._dir, 'config')
         self._load_config_file()
