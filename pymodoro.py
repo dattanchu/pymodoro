@@ -8,6 +8,7 @@
 import os
 import sys
 import time
+import subprocess
 from argparse import ArgumentParser
 from subprocess import Popen
 
@@ -53,6 +54,7 @@ class Config(object):
         # Sound
         self.enable_sound = True
         self.enable_tick_sound = False
+        self.sound_command = 'aplay -q %s &'
         self.session_sound_file = os.path.join(self.data_path, 'session.wav')
         self.break_sound_file = os.path.join(self.data_path, 'break.wav')
         self.tick_sound_file = os.path.join(self.data_path, 'tick.wav')
@@ -108,24 +110,30 @@ class Config(object):
 
         self._parser.read(self._file)
 
-        self.session_file = self._config_get_quoted_string('General', 'session')
-        self.auto_hide = self._parser.getboolean('General', 'autohide')
-        # Set 'oneline' to True if you want pymodoro to output only one line and exit.
-        self.enable_only_one_line = self._parser.getboolean('General', 'oneline')
+        try:
+            self.session_file = self._config_get_quoted_string('General', 'session')
+            self.auto_hide = self._parser.getboolean('General', 'autohide')
+            # Set 'oneline' to True if you want pymodoro to output only one line and exit.
+            self.enable_only_one_line = self._parser.getboolean('General', 'oneline')
 
-        self.pomodoro_prefix = self._config_get_quoted_string('Labels', 'pomodoro_prefix')
-        self.pomodoro_suffix = self._config_get_quoted_string('Labels', 'pomodoro_suffix')
-        self.break_prefix = self._config_get_quoted_string('Labels', 'break_prefix')
-        self.break_suffix = self._config_get_quoted_string('Labels', 'break_suffix')
+            self.pomodoro_prefix = self._config_get_quoted_string('Labels', 'pomodoro_prefix')
+            self.pomodoro_suffix = self._config_get_quoted_string('Labels', 'pomodoro_suffix')
+            self.break_prefix = self._config_get_quoted_string('Labels', 'break_prefix')
+            self.break_suffix = self._config_get_quoted_string('Labels', 'break_suffix')
 
-        self.left_to_right = self._parser.getboolean('Progress Bar', 'left_to_right')
-        self.total_number_of_marks = self._parser.getint('Progress Bar', 'total_marks')
-        self.session_full_mark_character = self._config_get_quoted_string('Progress Bar', 'session_character')
-        self.break_full_mark_character = self._config_get_quoted_string('Progress Bar', 'break_character')
-        self.empty_mark_character = self._config_get_quoted_string('Progress Bar', 'empty_character')
+            self.left_to_right = self._parser.getboolean('Progress Bar', 'left_to_right')
+            self.total_number_of_marks = self._parser.getint('Progress Bar', 'total_marks')
+            self.session_full_mark_character = self._config_get_quoted_string('Progress Bar', 'session_character')
+            self.break_full_mark_character = self._config_get_quoted_string('Progress Bar', 'break_character')
+            self.empty_mark_character = self._config_get_quoted_string('Progress Bar', 'empty_character')
 
-        self.enable_sound = self._parser.getboolean('Sound', 'enable')
-        self.enable_tick_sound = self._parser.getboolean('Sound', 'tick')
+            self.enable_sound = self._parser.getboolean('Sound', 'enable')
+            self.enable_tick_sound = self._parser.getboolean('Sound', 'tick')
+            self.sound_command = self._config_get_quoted_string('Sound', 'sound_command')
+        except configparser.NoOptionError:
+            # If the option is missing from the config file (old version of the file
+            # for example), don't throw an exception, just use the defaults
+            pass
 
 
     def _create_config_file(self):
@@ -150,6 +158,7 @@ class Config(object):
         self._parser.add_section('Sound')
         self._parser.set('Sound', 'enable', str(self.enable_sound).lower())
         self._parser.set('Sound', 'tick', str(self.enable_tick_sound).lower())
+        self._parser.set('Sound', 'command', str(self.sound_command).lower())
 
         if not os.path.exists(self._dir):
             os.makedirs(self._dir)
@@ -194,6 +203,7 @@ class Config(object):
         arg_parser.add_argument('-st', '--tick-sound', action='store', help='Ticking sound file (default: klack.wav).', metavar='PATH', dest='tick_sound_file')
         arg_parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
         arg_parser.add_argument('-t', '--tick', action='store_true', help='Play tick sound at every interval', dest='tick')
+        arg_parser.add_argument('-sc', '--sound-command', action='store', help='Command callled to play a sound. Default to "aplay -q %%s &". %%s will be replaced with the sound filename.', metavar='SOUND COMMAND', dest='sound_command')
         arg_parser.add_argument('-ltr', '--left-to-right', action='store_true', help='Display markers from left to right (incrementing marker instead of decrementing)', dest='left_to_right')
         arg_parser.add_argument('-bp', '--break-prefix', action='store', help='String to display before, when we are in a break. Default to "B". Can be used to format display for dzen.', metavar='BREAK PREFIX', dest='break_prefix')
         arg_parser.add_argument('-bs', '--break-suffix', action='store', help='String to display after, when we are in a break. Default to "". Can be used to format display for dzen.', metavar='BREAK SUFFIX', dest='break_suffix')
@@ -236,6 +246,8 @@ class Config(object):
             self.enable_sound = False
         if args.tick:
             self.enable_tick_sound = True
+        if args.sound_command:
+            self.sound_command = args.sound_command
         if args.left_to_right:
             self.left_to_right = True
         if args.no_break:
@@ -518,9 +530,10 @@ class Pymodoro(object):
         return output_seconds
 
     def play_sound(self, sound_file):
-        """Play specified sound file with aplay."""
+        """Play specified sound file with aplay by default."""
         if self.config.enable_sound:
-            os.system('aplay -q %s &' % sound_file)
+            with open(os.devnull, 'wb') as devnull:
+                subprocess.check_call(self.config.sound_command % sound_file, stdout=devnull, stderr=subprocess.STDOUT, shell=True)
 
     def notify(self, strings):
         """ Send a desktop notification."""
