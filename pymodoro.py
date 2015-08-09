@@ -9,6 +9,7 @@ import os
 import sys
 import time
 import subprocess
+import math
 from argparse import ArgumentParser
 from subprocess import Popen
 
@@ -552,6 +553,11 @@ class Py3status:
     py3status, a python wrapper for i3bar
     """
 
+    color = None
+    start_color = "#8bf09b"
+    end_color = "#e94d44"
+    break_color = "#ddee5c" 
+
     def pymodoro_main(self, i3s_output_list, i3s_config):
 
         # Don't pass any arguments to pymodoro to avoid conflicts with
@@ -569,15 +575,54 @@ class Py3status:
         # Restore argv
         sys.argv = save_argv
 
-        response = {
-            'full_text': text
-        }
+        try:
+            from colour import Color
+            start_c = Color(self.start_color)
+            end_c = Color(self.end_color)
+            break_c = Color(self.break_color)
 
-        # Don't cache anything
-        response['cached_until'] = time.time()
+            if pymodoro.state == pymodoro.ACTIVE_STATE:
+                nb_minutes = int(math.floor(pymodoro.config.session_duration_in_seconds / 60))
+                colors = list(end_c.range_to(start_c,nb_minutes))
+
+                seconds_left = pymodoro.get_seconds_left()
+
+                if seconds_left is not None:
+                    nb_minutes_left = int(math.floor(seconds_left / 60))
+                    if nb_minutes_left >=  len(colors):
+                        nb_minutes_left = len(colors)-1
+                    self.color = colors[nb_minutes_left].hex
+                else:
+                    self.color = start_c.hex
+            else:
+                self.color = break_c.hex 
+            
+        except ImportError:
+            # If colour is not installed, use the default color
+            pass
+
+        response = {
+            'full_text': text,
+            'color': self.color,
+            # Don't cache anything
+            'cached_until': time.time()
+        }
 
         return response
 
+def main_py3status():
+    """
+    Test this module by calling it directly.
+    """
+    from time import sleep
+    x = Py3status()
+    config = {
+        'color_good': '#00FF00',
+        'color_bad': '#FF0000',
+    }
+    while True:
+        print(x.pymodoro_main([], config))
+        sleep(1)
 
 def main():
     pymodoro = Pymodoro()
