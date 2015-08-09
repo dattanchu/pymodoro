@@ -17,7 +17,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-
 class Config(object):
     """Load config from defaults, file and arguments."""
 
@@ -338,8 +337,8 @@ class Pymodoro(object):
         if sound:
             self.play_sound(sound)
 
-    def print_output(self):
-        """Print output determined by the current state."""
+    def make_output(self):
+        """Make output determined by the current state."""
         auto_hide = self.config.auto_hide
         seconds_left = self.get_seconds_left()
 
@@ -400,7 +399,11 @@ class Pymodoro(object):
             else:
                 timer = "Over a week"
 
-        sys.stdout.write(format % (prefix, progress, timer, suffix))
+        return format % (prefix, progress, timer, suffix)
+
+    def print_output(self):
+
+        sys.stdout.write(self.make_output())
         sys.stdout.flush()
 
     def wait(self):
@@ -541,6 +544,41 @@ class Pymodoro(object):
             Popen(['notify-send'] + strings)
         except OSError:
             pass
+
+
+class Py3status:
+    """
+    Special class to allow pymodoro to be used as a module for
+    py3status, a python wrapper for i3bar
+    """
+
+    def pymodoro_main(self, i3s_output_list, i3s_config):
+
+        # Don't pass any arguments to pymodoro to avoid conflicts with
+        # py3status arguments
+        save_argv = sys.argv
+        sys.argv = [sys.argv[0]]
+
+        pymodoro = Pymodoro()
+        pymodoro.update_state()
+
+        # Get pymodoro output and remove newline
+        text = pymodoro.make_output().rstrip()
+        pymodoro.tick_sound()
+
+        # Restore argv
+        sys.argv = save_argv
+
+        response = {
+            'full_text': text,
+            'color': '#FFFFFF'
+        }
+
+        # Don't cache anything
+        response['cached_until'] = time.time()
+
+        return response
+
 
 def main():
     pymodoro = Pymodoro()
