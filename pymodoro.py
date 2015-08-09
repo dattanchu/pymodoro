@@ -154,7 +154,7 @@ class Config(object):
         if not os.path.exists(self._dir):
             os.makedirs(self._dir)
 
-        with open(self._file, 'wb') as configfile:
+        with open(self._file, 'at') as configfile:
             self._parser.write(configfile)
 
     def _config_set_quoted_string(self, section, option, value):
