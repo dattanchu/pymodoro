@@ -28,8 +28,6 @@ class Config(object):
         self.load_from_args()
 
     def load_defaults(self):
-        print("Loading defaults")
-
         self.script_path = self._get_script_path()
         self.data_path = os.path.join(self.script_path, 'data')
         self.session_file = os.path.expanduser('~/.pomodoro_session')
