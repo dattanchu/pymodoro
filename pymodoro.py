@@ -570,8 +570,7 @@ class Py3status:
         sys.argv = save_argv
 
         response = {
-            'full_text': text,
-            'color': '#FFFFFF'
+            'full_text': text
         }
 
         # Don't cache anything
