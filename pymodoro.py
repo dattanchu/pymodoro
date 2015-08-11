@@ -298,16 +298,26 @@ class Pymodoro(object):
         if not hasattr(self, 'state'):
             self.state = self.IDLE_STATE
 
-        current_state = self.state
         seconds_left = self.get_seconds_left()
         break_duration = self.config.break_duration_in_seconds
         break_elapsed = self.get_break_elapsed(seconds_left)
 
         if seconds_left is None:
+            self.state = self.IDLE_STATE
+        elif seconds_left >= 0:
+            self.state = self.ACTIVE_STATE
+        elif break_elapsed <= break_duration:
+            self.state = self.BREAK_STATE
+        else:
+            self.state = self.WAIT_STATE
+
+        current_state = self.state
+
+        if seconds_left is None:
             next_state = self.IDLE_STATE
-        elif seconds_left > 0:
+        elif seconds_left > 1:
             next_state = self.ACTIVE_STATE
-        elif break_elapsed < break_duration:
+        elif break_elapsed + 1 < break_duration or seconds_left == 1:
             next_state = self.BREAK_STATE
         else:
             next_state = self.WAIT_STATE
