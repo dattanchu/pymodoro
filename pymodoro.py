@@ -298,10 +298,16 @@ class Pymodoro(object):
         if not hasattr(self, 'state'):
             self.state = self.IDLE_STATE
 
-        current_state = self.state
         seconds_left = self.get_seconds_left()
+
+        if seconds_left is not None and seconds_left > 0:
+            self.state = self.ACTIVE_STATE
+
+        current_state = self.state
+
         break_duration = self.config.break_duration_in_seconds
         break_elapsed = self.get_break_elapsed(seconds_left)
+
 
         if seconds_left is None:
             next_state = self.IDLE_STATE
@@ -311,6 +317,9 @@ class Pymodoro(object):
             next_state = self.BREAK_STATE
         else:
             next_state = self.WAIT_STATE
+
+        print("current_state " + current_state)
+        print("next_state " + next_state)
 
         if next_state is not current_state:
             self.send_notifications(next_state)
