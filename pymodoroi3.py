@@ -11,6 +11,7 @@ import sys
 import time
 import math
 
+# Append current path to the python path
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 from pymodoro import Pymodoro
@@ -22,8 +23,12 @@ class Py3status:
     """
 
     color = None
+
+    # Green
     start_color = "#8bf09b"
+    # Red
     end_color = "#e94d44"
+    # Yellow
     break_color = "#ddee5c" 
 
     def pymodoro_main(self, i3s_output_list, i3s_config):
@@ -44,6 +49,9 @@ class Py3status:
         sys.argv = save_argv
 
         try:
+            # If colour is installed, we will display a nice gradient
+            # from red to green depending on how many time is left
+            # in the current pomodoro
             from colour import Color
             start_c = Color(self.start_color)
             end_c = Color(self.end_color)
@@ -78,7 +86,7 @@ class Py3status:
 
         return response
 
-def main_py3status():
+def main():
     """
     Test this module by calling it directly.
     """
@@ -91,10 +99,6 @@ def main_py3status():
     while True:
         print(x.pymodoro_main([], config))
         sleep(1)
-
-def main():
-    pymodoro = Pymodoro()
-    pymodoro.run()
 
 if __name__ == "__main__":
     main()
