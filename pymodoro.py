@@ -9,6 +9,7 @@ import os
 import sys
 import time
 import subprocess
+import math
 from argparse import ArgumentParser
 from subprocess import Popen
 
@@ -16,7 +17,6 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
-
 
 class Config(object):
     """Load config from defaults, file and arguments."""
@@ -338,8 +338,8 @@ class Pymodoro(object):
         if sound:
             self.play_sound(sound)
 
-    def print_output(self):
-        """Print output determined by the current state."""
+    def make_output(self):
+        """Make output determined by the current state."""
         auto_hide = self.config.auto_hide
         seconds_left = self.get_seconds_left()
 
@@ -400,7 +400,11 @@ class Pymodoro(object):
             else:
                 timer = "Over a week"
 
-        sys.stdout.write(format % (prefix, progress, timer, suffix))
+        return format % (prefix, progress, timer, suffix)
+
+    def print_output(self):
+
+        sys.stdout.write(self.make_output())
         sys.stdout.flush()
 
     def wait(self):
