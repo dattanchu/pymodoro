@@ -62,6 +62,10 @@ class Config(object):
         # Run until SIGINT or any other interrupts by default.
         self.enable_only_one_line = False
 
+        # Files for hooks (TODO make configurable)
+        self.start_pomodoro_hook_file = os.path.expanduser("~/.pymodoro/hooks/start-pomodoro.py")
+        self.complete_pomodoro_hook_file = os.path.expanduser("~/.pymodoro/hooks/complete-pomodoro.py")
+
     def load_user_data(self):
         """
         Custom User Data
@@ -324,12 +328,17 @@ class Pymodoro(object):
 
         if next_state is not current_state:
             self.send_notifications(next_state)
-            # execute hooks
-            # TODO neaten to use class variables
-            if (next_state == self.BREAK_STATE and
-                current_state == self.ACTIVE_STATE and
-                os.path.exists(os.path.expanduser("~/.pymodoro/hooks/complete-pomodoro.py"))):
-                subprocess.call(os.path.expanduser("~/.pymodoro/hooks/complete-pomodoro.py"))
+
+            # Execute hooks
+            if (current_state == self.ACTIVE_STATE and
+                next_state == self.BREAK_STATE and
+                os.path.exists(self.complete_pomodoro_hook_file)):
+                subprocess.check_call(self.complete_pomodoro_hook_file)
+
+            elif (current_state == self.IDLE_STATE and
+                  next_state == self.ACTIVE_STATE and
+                  os.path.exists(self.start_pomodoro_hook_file)):
+                subprocess.check_call(self.start_pomodoro_hook_file)
 
             self.state = next_state
 
