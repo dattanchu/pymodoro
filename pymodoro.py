@@ -324,6 +324,13 @@ class Pymodoro(object):
 
         if next_state is not current_state:
             self.send_notifications(next_state)
+            # execute hooks
+            # TODO neaten to use class variables
+            if (next_state == self.BREAK_STATE and
+                current_state == self.ACTIVE_STATE and
+                os.path.exists(os.path.expanduser("~/.pymodoro/hooks/complete-pomodoro.py"))):
+                subprocess.call(os.path.expanduser("~/.pymodoro/hooks/complete-pomodoro.py"))
+
             self.state = next_state
 
     def send_notifications(self, next_state):
