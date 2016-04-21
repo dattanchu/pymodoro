@@ -86,6 +86,14 @@ You can set all the options via command line paramters. For a detailed descripti
 
 It is no longer needed to edit the script itself. If you still want to do it, open up the file **~/.pymodoro/pymodoro.py**.
 
+## Hooks
+There are currently two hooks, found in:
+
+    ~/.pymodoro/hooks/start-pomodoro.py
+    ~/.pymodoro/hooks/complete-pomodoro.py
+
+Create these files and they will be executed once the pomodoro starts and stop respectively.
+
 ## Credits
 
 * Thanks to Mirko Horstmann for [the ticking sound](http://www.freesound.org/people/m1rk0/sounds/50070/).
