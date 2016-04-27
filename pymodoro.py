@@ -332,13 +332,13 @@ class Pymodoro(object):
             # Execute hooks
             if (current_state == self.ACTIVE_STATE and
                 next_state == self.BREAK_STATE and
-                os.path.exists(self.complete_pomodoro_hook_file)):
-                subprocess.check_call(self.complete_pomodoro_hook_file)
+                os.path.exists(self.config.complete_pomodoro_hook_file)):
+                subprocess.check_call(self.config.complete_pomodoro_hook_file)
 
-            elif (current_state == self.IDLE_STATE and
+            elif (current_state != self.ACTIVE_STATE and
                   next_state == self.ACTIVE_STATE and
-                  os.path.exists(self.start_pomodoro_hook_file)):
-                subprocess.check_call(self.start_pomodoro_hook_file)
+                  os.path.exists(self.config.start_pomodoro_hook_file)):
+                subprocess.check_call(self.config.start_pomodoro_hook_file)
 
             self.state = next_state
 
