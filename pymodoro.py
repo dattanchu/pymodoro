@@ -202,9 +202,9 @@ class Config(object):
         arg_parser.add_argument('-b', '--break', action='store', help='Break full mark characters (default: |).', metavar='CHARACTER', dest='break_full_mark_character')
         arg_parser.add_argument('-e', '--empty', action='store', help='Empty mark characters (default: ·).', metavar='CHARACTER', dest='empty_mark_character')
 
-        arg_parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: nokiaring.wav).', metavar='PATH', dest='session_sound_file')
-        arg_parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: rimshot.wav).', metavar='PATH', dest='break_sound_file')
-        arg_parser.add_argument('-st', '--tick-sound', action='store', help='Ticking sound file (default: klack.wav).', metavar='PATH', dest='tick_sound_file')
+        arg_parser.add_argument('-sp', '--pomodoro-sound', action='store', help='Pomodoro end sound file (default: session.wav).', metavar='PATH', dest='session_sound_file')
+        arg_parser.add_argument('-sb', '--break-sound', action='store', help='Break end sound file (default: break.wav).', metavar='PATH', dest='break_sound_file')
+        arg_parser.add_argument('-st', '--tick-sound', action='store', help='Ticking sound file (default: tick.wav).', metavar='PATH', dest='tick_sound_file')
         arg_parser.add_argument('-si', '--silent', action='store_true', help='Play no end sounds', dest='silent')
         arg_parser.add_argument('-t', '--tick', action='store_true', help='Play tick sound at every interval', dest='tick')
         arg_parser.add_argument('-sc', '--sound-command', action='store', help='Command callled to play a sound. Default to "aplay -q %%s &". %%s will be replaced with the sound filename.', metavar='SOUND COMMAND', dest='sound_command')
