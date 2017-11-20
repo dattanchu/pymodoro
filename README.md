@@ -39,6 +39,10 @@ Then add the module to your statusbar conf file (`~/.config/i3status/config` on 
 To install Pymodoro system wide, run the setup.py script like this:
 
     python setup.py install
+    
+You can also install Pymodoro using pip, whithout having to download/clone the code manually:
+
+    pip install git+https://github.com/dattanchu/pymodoro.git
 
 ## Usage
 
