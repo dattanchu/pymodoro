@@ -284,11 +284,13 @@ class Pymodoro(object):
         self.running = True
         # cache last time the session file was touched
         # to know if the session file contents should be re-read
-        self.last_start_time = 0 
+        self.last_start_time = 0
+        self.seconds_left = None
 
     def run(self):
         """ Start main loop."""
         while self.running:
+            self.seconds_left = self.get_seconds_left()
             self.update_state()
             self.print_output()
             self.tick_sound()
@@ -302,7 +304,7 @@ class Pymodoro(object):
         if not hasattr(self, 'state'):
             self.state = self.IDLE_STATE
 
-        seconds_left = self.get_seconds_left()
+        seconds_left = self.seconds_left
         break_duration = self.config.break_duration_in_seconds
         break_elapsed = self.get_break_elapsed(seconds_left)
 
@@ -367,7 +369,7 @@ class Pymodoro(object):
     def make_output(self):
         """Make output determined by the current state."""
         auto_hide = self.config.auto_hide
-        seconds_left = self.get_seconds_left()
+        seconds_left = self.seconds_left
 
         prefix = ""
         progress = ""
