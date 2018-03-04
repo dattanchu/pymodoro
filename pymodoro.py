@@ -290,7 +290,6 @@ class Pymodoro(object):
     def run(self):
         """ Start main loop."""
         while self.running:
-            self.seconds_left = self.get_seconds_left()
             self.update_state()
             self.print_output()
             self.tick_sound()
@@ -304,6 +303,7 @@ class Pymodoro(object):
         if not hasattr(self, 'state'):
             self.state = self.IDLE_STATE
 
+        self.seconds_left = self.get_seconds_left()
         seconds_left = self.seconds_left
         break_duration = self.config.break_duration_in_seconds
         break_elapsed = self.get_break_elapsed(seconds_left)
