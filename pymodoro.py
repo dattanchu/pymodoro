@@ -162,7 +162,7 @@ class Config(object):
         self._parser.add_section('Sound')
         self._parser.set('Sound', 'enable', str(self.enable_sound).lower())
         self._parser.set('Sound', 'tick', str(self.enable_tick_sound).lower())
-        self._parser.set('Sound', 'command', str(self.sound_command).lower())
+        self._parser.set('Sound', 'sound_command', str(self.sound_command).lower())
 
         if not os.path.exists(self._dir):
             os.makedirs(self._dir)
