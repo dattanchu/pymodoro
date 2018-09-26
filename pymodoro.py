@@ -323,7 +323,7 @@ class Config(object):
             '--sound-command',
             action='store',
             help='Command callled to play a sound. '
-                 'Default to "aplay -q %%s &". %%s will be replaced with the '
+                 'Defaults to "aplay -q %%s &". %%s will be replaced with the '
                  'sound filename.',
             metavar='SOUND COMMAND',
             dest='sound_command'
@@ -341,7 +341,7 @@ class Config(object):
             '--break-prefix',
             action='store',
             help='String to display before, when we are in a break. '
-                 'Default to "B". Can be used to format display for dzen.',
+                 'Defaults to "B". Can be used to format display for dzen.',
             metavar='BREAK PREFIX',
             dest='break_prefix'
         )
@@ -350,7 +350,7 @@ class Config(object):
             '--break-suffix',
             action='store',
             help='String to display after, when we are in a break. '
-                 'Default to "". Can be used to format display for dzen.',
+                 'Defaults to "". Can be used to format display for dzen.',
             metavar='BREAK SUFFIX',
             dest='break_suffix'
         )
@@ -359,7 +359,7 @@ class Config(object):
             '--pomodoro-prefix',
             action='store',
             help='String to display before, when we are in a pomodoro. '
-                 'Default to "P". Can be used to format display for dzen.',
+                 'Defaults to "P". Can be used to format display for dzen.',
             metavar='POMODORO PREFIX',
             dest='pomodoro_prefix'
         )
@@ -368,7 +368,7 @@ class Config(object):
             '--pomodoro-suffix',
             action='store',
             help='String to display after, when we are in a pomodoro. '
-                 'Default to "". Can be used to format display for dzen.',
+                 'Defaults to "". Can be used to format display for dzen.',
             metavar='POMODORO SUFFIX',
             dest='pomodoro_suffix'
         )
