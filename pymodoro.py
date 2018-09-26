@@ -9,7 +9,6 @@ import os
 import sys
 import time
 import subprocess
-import math
 from argparse import ArgumentParser
 from subprocess import Popen
 
