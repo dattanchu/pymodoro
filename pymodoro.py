@@ -322,7 +322,7 @@ class Config(object):
             '-sc',
             '--sound-command',
             action='store',
-            help='Command callled to play a sound. '
+            help='Command called to play a sound. '
                  'Defaults to "aplay -q %%s &". %%s will be replaced with the '
                  'sound filename.',
             metavar='SOUND COMMAND',
