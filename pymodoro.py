@@ -18,6 +18,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+
 class Config(object):
     """Load config from defaults, file and arguments."""
 
@@ -92,7 +93,6 @@ class Config(object):
         if os.path.exists(user_tick_sound):
             self.tick_sound_file = user_tick_sound
 
-
     def load_from_file(self):
         # We need to set the default for oneline in the parser here so
         # that users migrating from an older version of pymodoro who
@@ -115,54 +115,106 @@ class Config(object):
         self._parser.read(self._file)
 
         try:
-            self.session_file = self._config_get_quoted_string('General', 'session')
-            self.auto_hide = self._parser.getboolean('General', 'autohide')
-            # Set 'oneline' to True if you want pymodoro to output only one line and exit.
-            self.enable_only_one_line = self._parser.getboolean('General', 'oneline')
+            self.session_file = self._config_get_quoted_string(
+                'General',
+                'session'
+            )
 
-            self.pomodoro_prefix = self._config_get_quoted_string('Labels', 'pomodoro_prefix')
-            self.pomodoro_suffix = self._config_get_quoted_string('Labels', 'pomodoro_suffix')
-            self.break_prefix = self._config_get_quoted_string('Labels', 'break_prefix')
-            self.break_suffix = self._config_get_quoted_string('Labels', 'break_suffix')
+            self.auto_hide = self._parser.getboolean(
+                'General',
+                'autohide'
+            )
 
-            self.left_to_right = self._parser.getboolean('Progress Bar', 'left_to_right')
-            self.total_number_of_marks = self._parser.getint('Progress Bar', 'total_marks')
-            self.session_full_mark_character = self._config_get_quoted_string('Progress Bar', 'session_character')
-            self.break_full_mark_character = self._config_get_quoted_string('Progress Bar', 'break_character')
-            self.empty_mark_character = self._config_get_quoted_string('Progress Bar', 'empty_character')
+            # Set 'oneline' to True if you want pymodoro to output only one
+            # line and exit.
+            self.enable_only_one_line = self._parser.getboolean(
+                'General',
+                'oneline'
+            )
+
+            self.pomodoro_prefix = self._config_get_quoted_string(
+                'Labels',
+                'pomodoro_prefix'
+            )
+            self.pomodoro_suffix = self._config_get_quoted_string(
+                'Labels',
+                'pomodoro_suffix'
+            )
+            self.break_prefix = self._config_get_quoted_string(
+                'Labels',
+                'break_prefix'
+            )
+            self.break_suffix = self._config_get_quoted_string(
+                'Labels',
+                'break_suffix'
+            )
+
+            self.left_to_right = self._parser.getboolean(
+                'Progress Bar',
+                'left_to_right'
+            )
+            self.total_number_of_marks = self._parser.getint(
+                'Progress Bar',
+                'total_marks'
+            )
+            self.session_full_mark_character = self._config_get_quoted_string(
+                'Progress Bar',
+                'session_character'
+            )
+            self.break_full_mark_character = self._config_get_quoted_string(
+                'Progress Bar',
+                'break_character'
+            )
+            self.empty_mark_character = self._config_get_quoted_string(
+                'Progress Bar',
+                'empty_character')
 
             self.enable_sound = self._parser.getboolean('Sound', 'enable')
             self.enable_tick_sound = self._parser.getboolean('Sound', 'tick')
-            self.sound_command = self._config_get_quoted_string('Sound', 'sound_command')
+            self.sound_command = self._config_get_quoted_string(
+                'Sound',
+                'sound_command'
+            )
         except configparser.NoOptionError:
-            # If the option is missing from the config file (old version of the file
-            # for example), don't throw an exception, just use the defaults
+            # If the option is missing from the config file (old version of the
+            # file for example), don't throw an exception, just use the
+            # defaults
             pass
-
 
     def _create_config_file(self):
         self._parser.add_section('General')
         self._parser.set('General', 'autohide', str(self.auto_hide).lower())
         self._config_set_quoted_string('General', 'session', self.session_file)
-        self._parser.set('General', 'oneline', str(self.enable_only_one_line).lower())
+        self._parser.set('General', 'oneline',
+                         str(self.enable_only_one_line).lower())
 
         self._parser.add_section('Labels')
-        self._config_set_quoted_string('Labels', 'pomodoro_prefix', self.pomodoro_prefix)
-        self._config_set_quoted_string('Labels', 'pomodoro_suffix', self.pomodoro_suffix)
-        self._config_set_quoted_string('Labels', 'break_prefix', self.break_prefix)
-        self._config_set_quoted_string('Labels', 'break_suffix', self.break_suffix)
+        self._config_set_quoted_string('Labels', 'pomodoro_prefix',
+                                       self.pomodoro_prefix)
+        self._config_set_quoted_string('Labels', 'pomodoro_suffix',
+                                       self.pomodoro_suffix)
+        self._config_set_quoted_string('Labels', 'break_prefix',
+                                       self.break_prefix)
+        self._config_set_quoted_string('Labels', 'break_suffix',
+                                       self.break_suffix)
 
         self._parser.add_section('Progress Bar')
-        self._parser.set('Progress Bar', 'left_to_right', str(self.left_to_right).lower())
-        self._parser.set('Progress Bar', 'total_marks', self.total_number_of_marks)
-        self._config_set_quoted_string('Progress Bar', 'session_character', self.session_full_mark_character)
-        self._config_set_quoted_string('Progress Bar', 'break_character', self.break_full_mark_character)
-        self._config_set_quoted_string('Progress Bar', 'empty_character', self.empty_mark_character)
+        self._parser.set('Progress Bar', 'left_to_right',
+                         str(self.left_to_right).lower())
+        self._parser.set('Progress Bar', 'total_marks',
+                         self.total_number_of_marks)
+        self._config_set_quoted_string('Progress Bar', 'session_character',
+                                       self.session_full_mark_character)
+        self._config_set_quoted_string('Progress Bar', 'break_character',
+                                       self.break_full_mark_character)
+        self._config_set_quoted_string('Progress Bar', 'empty_character',
+                                       self.empty_mark_character)
 
         self._parser.add_section('Sound')
         self._parser.set('Sound', 'enable', str(self.enable_sound).lower())
         self._parser.set('Sound', 'tick', str(self.enable_tick_sound).lower())
-        self._parser.set('Sound', 'sound_command', str(self.sound_command).lower())
+        self._parser.set('Sound', 'sound_command',
+                         str(self.sound_command).lower())
 
         if not os.path.exists(self._dir):
             os.makedirs(self._dir)
@@ -435,6 +487,7 @@ class Config(object):
         if args.oneline:
             self.enable_only_one_line = True
 
+
 class Pymodoro(object):
 
     IDLE_STATE = 'IDLE'
@@ -616,7 +669,7 @@ class Pymodoro(object):
         seconds_left = None
         if os.path.exists(self.session):
             start_time = os.path.getmtime(self.session)
-            if start_time != self.last_start_time :
+            if start_time != self.last_start_time:
                 # the session file has been updated
                 # re-read the contents
                 self.set_durations()
@@ -730,7 +783,12 @@ class Pymodoro(object):
         """Play specified sound file with aplay by default."""
         if self.config.enable_sound:
             with open(os.devnull, 'wb') as devnull:
-                subprocess.check_call(self.config.sound_command % sound_file, stdout=devnull, stderr=subprocess.STDOUT, shell=True)
+                subprocess.check_call(
+                    self.config.sound_command % sound_file,
+                    stdout=devnull,
+                    stderr=subprocess.STDOUT,
+                    shell=True
+                )
 
     def notify(self, strings):
         """ Send a desktop notification."""
@@ -739,9 +797,11 @@ class Pymodoro(object):
         except OSError:
             pass
 
+
 def main():
     pymodoro = Pymodoro()
     pymodoro.run()
+
 
 if __name__ == "__main__":
     main()
