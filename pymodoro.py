@@ -30,7 +30,7 @@ class Config(object):
     def load_defaults(self):
         self.script_path = self._get_script_path()
         self.data_path = os.path.join(self.script_path, 'data')
-        self.session_file = os.path.expanduser('~/.pomodoro_session')
+        self.session_file = os.path.expanduser('~/.cache/pomodoro_session')
         self.auto_hide = False
 
         # Times
