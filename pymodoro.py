@@ -34,9 +34,9 @@ class Config(object):
         self.auto_hide = False
 
         # Times
-        self.session_duration_in_seconds = 25 * 60 + 1
-        self.break_duration_in_seconds = 5 * 60
-        self.update_interval_in_seconds = 1
+        self.session_duration_secs = 25 * 60 + 1
+        self.break_duration_secs = 5 * 60
+        self.update_interval_secs = 1
 
         # Progress Bar
         self.total_number_of_marks = 10
@@ -245,7 +245,7 @@ class Config(object):
             '--seconds',
             action='store_true',
             help='Changes format of input times from minutes to seconds.',
-            dest='durations_in_seconds'
+            dest='durations_secs'
         )
         arg_parser.add_argument(
             'session_duration',
@@ -294,7 +294,7 @@ class Config(object):
             type=int,
             help='Update interval in seconds (default: 1).',
             metavar='DURATION',
-            dest='update_interval_in_seconds'
+            dest='update_interval_secs'
         )
         arg_parser.add_argument(
             '-l',
@@ -435,17 +435,17 @@ class Config(object):
         args = arg_parser.parse_args()
 
         if args.session_duration:
-            if args.durations_in_seconds:
-                self.session_duration_in_seconds = args.session_duration
+            if args.durations_secs:
+                self.session_duration_secs = args.session_duration
             else:
-                self.session_duration_in_seconds = args.session_duration * 60
+                self.session_duration_secs = args.session_duration * 60
         if args.break_duration:
-            if args.durations_in_seconds:
-                self.break_duration_in_seconds = args.break_duration
+            if args.durations_secs:
+                self.break_duration_secs = args.break_duration
             else:
-                self.break_duration_in_seconds = args.break_duration * 60
-        if args.update_interval_in_seconds:
-            self.update_interval_in_seconds = args.update_interval_in_seconds
+                self.break_duration_secs = args.break_duration * 60
+        if args.update_interval_secs:
+            self.update_interval_secs = args.update_interval_secs
         if args.total_number_of_marks:
             self.total_number_of_marks = args.total_number_of_marks
         if args.session_full_mark_character:
@@ -471,7 +471,7 @@ class Config(object):
         if args.left_to_right:
             self.left_to_right = True
         if args.no_break:
-            self.break_duration_in_seconds = 0
+            self.break_duration_secs = 0
         if args.auto_hide:
             self.auto_hide = True
         if args.break_prefix:
@@ -522,7 +522,7 @@ class Pymodoro(object):
 
         self.seconds_left = self.get_seconds_left()
         seconds_left = self.seconds_left
-        break_duration = self.config.break_duration_in_seconds
+        break_duration = self.config.break_duration_secs
         break_elapsed = self.get_break_elapsed(seconds_left)
 
         if seconds_left is None:
@@ -601,7 +601,7 @@ class Pymodoro(object):
             progress = "-"
 
         elif self.state == self.ACTIVE_STATE:
-            duration = self.config.session_duration_in_seconds
+            duration = self.config.session_duration_secs
             output_seconds = self.get_output_seconds(seconds_left)
             output_minutes = self.get_minutes(seconds_left)
 
@@ -612,7 +612,7 @@ class Pymodoro(object):
             format = "%s%s %s%s\n"
 
         elif self.state == self.BREAK_STATE:
-            duration = self.config.break_duration_in_seconds
+            duration = self.config.break_duration_secs
             break_seconds = self.get_break_seconds_left(seconds_left)
             output_seconds = self.get_output_seconds(break_seconds)
             output_minutes = self.get_minutes(break_seconds)
@@ -654,7 +654,7 @@ class Pymodoro(object):
 
     def wait(self):
         """Wait for the specified interval."""
-        interval = self.config.update_interval_in_seconds
+        interval = self.config.update_interval_secs
         time.sleep(interval)
 
     def tick_sound(self):
@@ -673,7 +673,7 @@ class Pymodoro(object):
                 # re-read the contents
                 self.set_durations()
                 self.last_start_time = start_time
-            session_duration = self.config.session_duration_in_seconds
+            session_duration = self.config.session_duration_secs
             seconds_left = session_duration - time.time() + start_time
         return seconds_left
 
@@ -701,27 +701,27 @@ class Pymodoro(object):
             f.close()
         return content.rsplit()
 
-    def set_session_duration(self, session_duration_as_string):
-        session_duration_as_integer = self.convert_string_to_int(session_duration_as_string)
-        if session_duration_as_integer != -1:
-            self.config.session_duration_in_seconds = session_duration_as_integer * 60
+    def set_session_duration(self, session_duration_str):
+        try:
+            self.config.session_duration_secs = int(session_duration_str) * 60
+        except ValueError:
+            print("Invalid session duration: {}.\n"
+                  "Try deleting your session file.".format(session_duration_str))
+            sys.exit(1)
 
-    def convert_string_to_int(self, string):
-        if not string.isdigit():
-            return -1
-        else:
-            return int(string)
-
-    def set_break_duration(self, break_duration_as_string):
+    def set_break_duration(self, break_duration_str):
         """Modify break duration."""
-        break_duration_as_integer = self.convert_string_to_int(break_duration_as_string)
-        if break_duration_as_integer != -1:
-            self.config.break_duration_in_seconds = break_duration_as_integer * 60
+        try:
+            self.config.break_duration_secs = int(break_duration_str) * 60
+        except ValueError:
+            print("Invalid break duration: {}.\n"
+                  "Try deleting your session file.".format(break_duration_str))
+            sys.exit(1)
 
     def get_break_seconds_left(self, seconds):
-        return self.config.break_duration_in_seconds + seconds
+        return self.config.break_duration_secs + seconds
 
-    def get_progress_bar(self, duration_in_seconds, seconds):
+    def get_progress_bar(self, duration_secs, seconds):
         """Return progess bar using full and empty characters."""
         output = ""
         total_marks = self.config.total_number_of_marks
@@ -734,7 +734,7 @@ class Pymodoro(object):
             full_mark_character = self.config.break_full_mark_character
 
         if total_marks:
-            seconds_per_mark = (duration_in_seconds / total_marks)
+            seconds_per_mark = (duration_secs / total_marks)
             number_of_full_marks = int(round(seconds / seconds_per_mark))
 
             # Reverse the display order
