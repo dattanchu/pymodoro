@@ -6,20 +6,16 @@
 #  - py3status for i3bar
 #  - pymodoro.py in your PYTHON_PATH or in the current directory
 
-import os
 import sys
 import time
 import math
 
-# Append current path to the python path
-sys.path.append(os.path.join(os.path.dirname(__file__)))
+from pymodoro.pymodoro import Pymodoro
 
-from pymodoro import Pymodoro
 
 class Py3status:
-    """
-    Special class to allow pymodoro to be used as a module for
-    py3status, a python wrapper for i3bar
+    """ Special class to allow pymodoro to be used as a module for
+        py3status, a python wrapper for i3bar.
     """
 
     color = None
@@ -29,7 +25,7 @@ class Py3status:
     # Red
     end_color = "#e94d44"
     # Yellow
-    break_color = "#ddee5c" 
+    break_color = "#ddee5c"
 
     def pymodoro_main(self, i3s_output_list, i3s_config):
 
@@ -58,21 +54,23 @@ class Py3status:
             break_c = Color(self.break_color)
 
             if pymodoro.state == pymodoro.ACTIVE_STATE:
-                nb_minutes = int(math.floor(pymodoro.config.session_duration_in_seconds / 60))
-                colors = list(end_c.range_to(start_c,nb_minutes))
+                nb_minutes = int(
+                    math.floor(pymodoro.config.session_duration_secs / 60)
+                )
+                colors = list(end_c.range_to(start_c, nb_minutes))
 
                 seconds_left = pymodoro.get_seconds_left()
 
                 if seconds_left is not None:
                     nb_minutes_left = int(math.floor(seconds_left / 60))
-                    if nb_minutes_left >=  len(colors):
+                    if nb_minutes_left >= len(colors):
                         nb_minutes_left = len(colors)-1
                     self.color = colors[nb_minutes_left].hex
                 else:
                     self.color = start_c.hex
             else:
-                self.color = break_c.hex 
-            
+                self.color = break_c.hex
+
         except ImportError:
             # If colour is not installed, use the default color
             pass
@@ -86,10 +84,9 @@ class Py3status:
 
         return response
 
+
 def main():
-    """
-    Test this module by calling it directly.
-    """
+    """Test this module by calling it directly."""
     from time import sleep
     x = Py3status()
     config = {
@@ -99,6 +96,7 @@ def main():
     while True:
         print(x.pymodoro_main([], config))
         sleep(1)
+
 
 if __name__ == "__main__":
     main()
