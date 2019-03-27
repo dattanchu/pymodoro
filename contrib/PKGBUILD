@@ -5,12 +5,12 @@ pkgver=r127.176c813
 pkgrel=1
 pkgdesc="Pomodoro for Xmobar or Dzen"
 arch=(any)
-url=https://github.com/dkasak/pymodoro
+url=https://github.com/dattanchu/pymodoro
 depends=(python)
 makedepends=(git python-setuptools)
 provides=(pymodoro)
 conflicts=(pymodoro)
-source=(git+https://github.com/dkasak/pymodoro.git)
+source=(git+https://github.com/dattanchu/pymodoro.git)
 md5sums=(SKIP)
 
 pkgver() {
