@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup (
     name='pymodoro',
-    version='0.2',
+    version='0.3',
     packages=['pymodoro'],
     package_data={'pymodoro': ['data/*']},
     entry_points={
