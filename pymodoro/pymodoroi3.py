@@ -10,10 +10,7 @@ import sys
 import time
 import math
 
-# Append current path to the python path
-sys.path.append(os.path.join(os.path.dirname(__file__)))
-
-from pymodoro import Pymodoro
+from pymodoro.pymodoro import Pymodoro
 
 
 class Py3status:
