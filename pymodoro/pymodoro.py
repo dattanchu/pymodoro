@@ -5,13 +5,15 @@
 # Prerequisite
 #  - aplay to play a sound of your choice
 
+from __future__ import division
+
 import os
 import sys
 import time
 import subprocess
-import math
-from argparse import ArgumentParser
 from subprocess import Popen
+from argparse import ArgumentParser
+
 
 try:
     import configparser
@@ -21,17 +23,17 @@ except ImportError:
 
 def get_days(seconds):
     """Convert seconds to days."""
-    return int(seconds / 86400)
+    return seconds // 86400
 
 
 def get_hours(seconds):
     """Convert seconds to hours."""
-    return int(seconds / 3600)
+    return seconds // 3600
 
 
 def get_minutes(seconds):
     """Convert seconds to minutes."""
-    return int(seconds / 60)
+    return seconds // 60
 
 
 class Config(object):
