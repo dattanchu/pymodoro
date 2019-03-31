@@ -1,8 +1,6 @@
-import os
-import glob
 from setuptools import setup
 
-setup (
+setup(
     name='pymodoro',
     version='0.3',
     packages=['pymodoro'],
