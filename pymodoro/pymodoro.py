@@ -526,7 +526,7 @@ class Pymodoro(object):
         self.seconds_left = None
 
     def run(self):
-        """ Start main loop."""
+        """Start main loop."""
         while self.running:
             self.update_state()
             self.print_output()
@@ -537,7 +537,7 @@ class Pymodoro(object):
                 self.wait()
 
     def update_state(self):
-        """ Update the current state determined by timings."""
+        """Update the current state determined by timings."""
         if not hasattr(self, 'state'):
             self.state = self.IDLE_STATE
 
@@ -799,7 +799,7 @@ class Pymodoro(object):
                 )
 
     def notify(self, strings):
-        """ Send a desktop notification."""
+        """Send a desktop notification."""
         try:
             Popen(['notify-send'] + strings)
         except OSError:

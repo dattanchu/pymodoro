@@ -14,8 +14,8 @@ from pymodoro.pymodoro import Pymodoro
 
 
 class Py3status:
-    """ Special class to allow pymodoro to be used as a module for
-        py3status, a python wrapper for i3bar.
+    """Special class to allow pymodoro to be used as a module for
+       py3status, a python wrapper for i3bar.
     """
 
     color = None
