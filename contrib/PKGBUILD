@@ -1,7 +1,7 @@
 # Maintainer: Denis Kasak <dkasak AT termina DOT org DOT uk>
 pkgname=pymodoro-git
 _gitname=pymodoro
-pkgver=r127.176c813
+pkgver=r138.e3585c5
 pkgrel=1
 pkgdesc="Pomodoro for Xmobar or Dzen"
 arch=(any)
@@ -10,7 +10,7 @@ depends=(python)
 makedepends=(git python-setuptools)
 provides=(pymodoro)
 conflicts=(pymodoro)
-source=(git+https://github.com/dattanchu/pymodoro.git)
+source=(git+"$url")
 md5sums=(SKIP)
 
 pkgver() {
