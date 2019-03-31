@@ -803,7 +803,7 @@ class Pymodoro(object):
     def notify(self, strings):
         """Send a desktop notification."""
         try:
-            Popen(['notify-send'] + strings)
+            Popen(['notify-send', '--app-name', 'pymodoro'] + strings)
         except OSError:
             pass
 
