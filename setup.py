@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pymodoro',
-    version='0.3',
+    version='0.4',
     packages=['pymodoro'],
     package_data={'pymodoro': ['data/*']},
     entry_points={
