@@ -9,6 +9,7 @@ import os
 import sys
 import time
 import subprocess
+import math
 from argparse import ArgumentParser
 from subprocess import Popen
 
@@ -16,6 +17,21 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+
+def get_days(seconds):
+    """Convert seconds to days."""
+    return int(seconds / 86400)
+
+
+def get_hours(seconds):
+    """Convert seconds to hours."""
+    return int(seconds / 3600)
+
+
+def get_minutes(seconds):
+    """Convert seconds to minutes."""
+    return int(seconds / 60)
 
 
 class Config(object):
@@ -94,6 +110,7 @@ class Config(object):
             self.break_sound_file = user_break_sound
         if os.path.exists(user_tick_sound):
             self.tick_sound_file = user_tick_sound
+
 
     def load_from_file(self):
         # We need to set the default for oneline in the parser here so
@@ -182,6 +199,7 @@ class Config(object):
             # file for example), don't throw an exception, just use the
             # defaults
             pass
+
 
     def _create_config_file(self):
         self._parser.add_section('General')
@@ -606,7 +624,7 @@ class Pymodoro(object):
         elif self.state == self.ACTIVE_STATE:
             duration = self.config.session_duration_secs
             output_seconds = self.get_output_seconds(seconds_left)
-            output_minutes = self.get_minutes(seconds_left)
+            output_minutes = get_minutes(seconds_left)
 
             prefix = self.config.pomodoro_prefix
             suffix = self.config.pomodoro_suffix
@@ -618,7 +636,7 @@ class Pymodoro(object):
             duration = self.config.break_duration_secs
             break_seconds = self.get_break_seconds_left(seconds_left)
             output_seconds = self.get_output_seconds(break_seconds)
-            output_minutes = self.get_minutes(break_seconds)
+            output_minutes = get_minutes(break_seconds)
 
             prefix = self.config.break_prefix
             suffix = self.config.break_suffix
@@ -628,9 +646,9 @@ class Pymodoro(object):
 
         elif self.state == self.WAIT_STATE:
             seconds = -seconds_left
-            minutes = self.get_minutes(seconds)
-            hours = self.get_hours(seconds)
-            days = self.get_days(seconds)
+            minutes = get_minutes(seconds)
+            hours = get_hours(seconds)
+            days = get_days(seconds)
 
             output_seconds = self.get_output_seconds(seconds)
             output_minutes = self.get_output_minutes(seconds)
@@ -752,32 +770,20 @@ class Pymodoro(object):
 
         return output
 
-    def get_days(self, seconds):
-        """Convert seconds to days."""
-        return int(seconds / 86400)
-
-    def get_hours(self, seconds):
-        """Convert seconds to hours."""
-        return int(seconds / 3600)
-
-    def get_minutes(self, seconds):
-        """Convert seconds to minutes."""
-        return int(seconds / 60)
-
     def get_output_hours(self, seconds):
-        hours = self.get_hours(seconds)
-        days = self.get_days(seconds)
+        hours = get_hours(seconds)
+        days = get_days(seconds)
         output_hours = int(hours - days * 24)
         return output_hours
 
     def get_output_minutes(self, seconds):
-        hours = self.get_hours(seconds)
-        minutes = self.get_minutes(seconds)
+        hours = get_hours(seconds)
+        minutes = get_minutes(seconds)
         output_minutes = int(minutes - hours * 60)
         return output_minutes
 
     def get_output_seconds(self, seconds):
-        minutes = self.get_minutes(seconds)
+        minutes = get_minutes(seconds)
         output_seconds = int(seconds - minutes * 60)
         return output_seconds
 
