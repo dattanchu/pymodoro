@@ -40,18 +40,48 @@ class Config(object):
     """Load config from defaults, file and arguments."""
 
     def __init__(self):
+        self.init_dirs()
         self.load_defaults()
         self.load_user_data()
         self.load_from_file()
         self.load_from_args()
 
+    def init_dirs(self):
+        """
+        Determine locations of config, data and cache directories, creating
+        them if necessary.
+
+        Prefer following the XDG Base Directory specification, if possible.
+        """
+
+        self._cache_home = os.environ.get('XDG_CACHE_HOME', '~/.cache')
+        self._config_home = os.environ.get('XDG_CONFIG_HOME', '~/.config')
+
+        # Determine location of config dir and create it if it's missing
+        old_config_dir = os.path.expanduser('~/.pymodoro')
+        new_config_dir = os.path.join(self._config_home, 'pymodoro')
+
+        if os.path.exists(old_config_dir):
+            print("Warning: Using deprecated old-style config dir '{}'. Please"
+                  " move it to '{}'.".format(old_config_dir, new_config_dir),
+                  file=sys.stderr)
+            self._config_dir = os.path.expanduser(old_config_dir)
+        else:
+            if not os.path.exists(new_config_dir):
+                os.makedirs(new_config_dir)
+            self._config_dir = os.path.expanduser(new_config_dir)
+
+        # For the cache directory, we simply use the XDG cache home instead of
+        # creating a subdirectory. We create it if it's missing.
+        self._cache_dir = os.path.expanduser(self._cache_home)
+
+        if not os.path.exists(self._cache_dir):
+            os.makedirs(self._cache_dir)
+
     def load_defaults(self):
         self.script_path = self._get_script_path()
         self.data_path = os.path.join(self.script_path, 'data')
-        data_home = os.environ.get('XDG_CACHE_HOME', '~/.cache')
-        self.session_file = os.path.expanduser(
-            os.path.join(data_home, 'pomodoro_session')
-        )
+        self.session_file = os.path.join(self._cache_dir, 'pomodoro_session')
         self.auto_hide = False
 
         # Times
@@ -84,27 +114,23 @@ class Config(object):
         self.enable_only_one_line = False
 
         # Files for hooks (TODO make configurable)
-        self.start_pomodoro_hook_file = os.path.expanduser("~/.pymodoro/hooks/start-pomodoro.py")
-        self.complete_pomodoro_hook_file = os.path.expanduser("~/.pymodoro/hooks/complete-pomodoro.py")
+        hooks_dir = os.path.expanduser(os.path.join(self._config_dir, "hooks"))
+        self.start_pomodoro_hook_file = os.path.join(hooks_dir, "start-pomodoro.py")
+        self.complete_pomodoro_hook_file = os.path.join(hooks_dir, "complete-pomodoro.py")
 
     def load_user_data(self):
         """
         Custom User Data
 
-        Check the ~/.local/share/pymodoro directory for custom user
-        files. This lets the user provide their own sound files which
-        are used instead of the default ones.
-
+        Check the (XDG Base Dir) data directory for custom user files. This
+        lets the user provide their own sound files which are used instead of
+        the default ones.
         """
-        self._user_dir = os.path.expanduser('~/.local/share/pymodoro')
-
-        if not os.path.exists(self._user_dir):
-            os.makedirs(self._user_dir)
 
         # Include any custom user sounds if present
-        user_session_sound = os.path.join(self._user_dir, 'session.wav')
-        user_break_sound = os.path.join(self._user_dir, 'break.wav')
-        user_tick_sound = os.path.join(self._user_dir, 'tick.wav')
+        user_session_sound = os.path.join(self._data_dir, 'session.wav')
+        user_break_sound = os.path.join(self._data_dir, 'break.wav')
+        user_tick_sound = os.path.join(self._data_dir, 'tick.wav')
 
         if os.path.exists(user_session_sound):
             self.session_sound_file = user_session_sound
@@ -113,7 +139,6 @@ class Config(object):
         if os.path.exists(user_tick_sound):
             self.tick_sound_file = user_tick_sound
 
-
     def load_from_file(self):
         # We need to set the default for oneline in the parser here so
         # that users migrating from an older version of pymodoro who
@@ -121,8 +146,7 @@ class Config(object):
         # option don't crash when the parser tries to read it.
         defaults = {'oneline': str(self.enable_only_one_line).lower()}
         self._parser = configparser.RawConfigParser(defaults)
-        self._dir = os.path.expanduser('~/.config/pymodoro')
-        self._file = os.path.join(self._dir, 'config')
+        self._config_file = os.path.join(self._config_dir, 'config')
         self._load_config_file()
 
     def _get_script_path(self):
@@ -130,10 +154,10 @@ class Config(object):
         return os.path.dirname(module_path)
 
     def _load_config_file(self):
-        if not os.path.exists(self._file):
+        if not os.path.exists(self._config_file):
             self._create_config_file()
 
-        self._parser.read(self._file)
+        self._parser.read(self._config_file)
 
         try:
             self.session_file = self._config_get_quoted_string(
@@ -202,7 +226,6 @@ class Config(object):
             # defaults
             pass
 
-
     def _create_config_file(self):
         self._parser.add_section('General')
         self._parser.set('General', 'autohide', str(self.auto_hide).lower())
@@ -238,10 +261,7 @@ class Config(object):
         self._parser.set('Sound', 'sound_command',
                          str(self.sound_command).lower())
 
-        if not os.path.exists(self._dir):
-            os.makedirs(self._dir)
-
-        with open(self._file, 'at') as configfile:
+        with open(self._config_file, 'at') as configfile:
             self._parser.write(configfile)
 
     def _config_set_quoted_string(self, section, option, value):
@@ -728,8 +748,7 @@ class Pymodoro(object):
         try:
             self.config.session_duration_secs = int(session_duration_str) * 60
         except ValueError:
-            print("Invalid session duration: {}.\n"
-                  "Try deleting your session file.".format(session_duration_str))
+            print("Invalid session duration: {}.\nTry deleting your session file.".format(session_duration_str))
             sys.exit(1)
 
     def set_break_duration(self, break_duration_str):
