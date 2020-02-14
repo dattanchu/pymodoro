@@ -8,6 +8,7 @@
 from __future__ import division
 
 import os
+from os import path
 import sys
 import time
 import subprocess
@@ -62,35 +63,35 @@ class Config(object):
         self._config_home = os.environ.get('XDG_CONFIG_HOME', '~/.config')
 
         # Determine location of config dir.
-        old_config_dir = os.path.expanduser('~/.pymodoro')
-        new_config_dir = os.path.join(self._config_home, 'pymodoro')
+        old_config_dir = path.expanduser('~/.pymodoro')
+        new_config_dir = path.join(self._config_home, 'pymodoro')
 
-        if os.path.exists(old_config_dir):
+        if path.exists(old_config_dir):
             print("Warning: Using deprecated old-style config dir '{}'. Please"
                   " move it to '{}'.".format(old_config_dir, new_config_dir),
                   file=sys.stderr)
-            self._config_dir = os.path.expanduser(old_config_dir)
+            self._config_dir = path.expanduser(old_config_dir)
         else:
-            self._config_dir = os.path.expanduser(new_config_dir)
+            self._config_dir = path.expanduser(new_config_dir)
 
         # For the cache directory, we simply use the XDG cache home instead of
         # creating a subdirectory.
-        self._cache_dir = os.path.expanduser(self._cache_home)
+        self._cache_dir = path.expanduser(self._cache_home)
 
         # Determine some other directories used by pymodoro
-        self._hooks_dir = os.path.join(self._config_dir, "hooks")
+        self._hooks_dir = path.join(self._config_dir, "hooks")
         self._script_path = self._get_script_path()
-        self._resource_dir = os.path.join(self._script_path, 'data')
+        self._resource_dir = path.join(self._script_path, 'data')
 
         # Create missing directories.
         for d in (self._cache_dir, self._config_dir, self._hooks_dir):
-            if not os.path.exists(d):
+            if not path.exists(d):
                 os.makedirs(d)
 
     def load_defaults(self):
         self._script_path = self._get_script_path()
-        self.data_path = os.path.join(self._script_path, 'data')
-        self.session_file = os.path.join(self._cache_dir, 'pomodoro_session')
+        self.data_path = path.join(self._script_path, 'data')
+        self.session_file = path.join(self._cache_dir, 'pomodoro_session')
         self.auto_hide = False
 
         # Times
@@ -115,17 +116,17 @@ class Config(object):
         self.enable_sound = True
         self.enable_tick_sound = False
         self.sound_command = 'aplay -q %s &'
-        self.session_sound_file = os.path.join(self.data_path, 'session.wav')
-        self.break_sound_file = os.path.join(self.data_path, 'break.wav')
-        self.tick_sound_file = os.path.join(self.data_path, 'tick.wav')
+        self.session_sound_file = path.join(self.data_path, 'session.wav')
+        self.break_sound_file = path.join(self.data_path, 'break.wav')
+        self.tick_sound_file = path.join(self.data_path, 'tick.wav')
 
         # Run until SIGINT or any other interrupts by default.
         self.enable_only_one_line = False
 
         # Files for hooks (TODO make configurable)
-        hooks_dir = os.path.expanduser(os.path.join(self._config_dir, "hooks"))
-        self.start_pomodoro_hook_file = os.path.join(hooks_dir, "start-pomodoro.py")
-        self.complete_pomodoro_hook_file = os.path.join(hooks_dir, "complete-pomodoro.py")
+        hooks_dir = path.expanduser(path.join(self._config_dir, "hooks"))
+        self.start_pomodoro_hook_file = path.join(hooks_dir, "start-pomodoro.py")
+        self.complete_pomodoro_hook_file = path.join(hooks_dir, "complete-pomodoro.py")
 
     def load_user_data(self):
         """
@@ -137,15 +138,15 @@ class Config(object):
         """
 
         # Include any custom user sounds if present
-        user_session_sound = os.path.join(self._resource_dir, 'session.wav')
-        user_break_sound = os.path.join(self._resource_dir, 'break.wav')
-        user_tick_sound = os.path.join(self._resource_dir, 'tick.wav')
+        user_session_sound = path.join(self._resource_dir, 'session.wav')
+        user_break_sound = path.join(self._resource_dir, 'break.wav')
+        user_tick_sound = path.join(self._resource_dir, 'tick.wav')
 
-        if os.path.exists(user_session_sound):
+        if path.exists(user_session_sound):
             self.session_sound_file = user_session_sound
-        if os.path.exists(user_break_sound):
+        if path.exists(user_break_sound):
             self.break_sound_file = user_break_sound
-        if os.path.exists(user_tick_sound):
+        if path.exists(user_tick_sound):
             self.tick_sound_file = user_tick_sound
 
     def load_from_file(self):
@@ -155,15 +156,15 @@ class Config(object):
         # option don't crash when the parser tries to read it.
         defaults = {'oneline': str(self.enable_only_one_line).lower()}
         self._parser = configparser.RawConfigParser(defaults)
-        self._config_file = os.path.join(self._config_dir, 'config')
+        self._config_file = path.join(self._config_dir, 'config')
         self._load_config_file()
 
     def _get_script_path(self):
-        module_path = os.path.realpath(__file__)
-        return os.path.dirname(module_path)
+        module_path = path.realpath(__file__)
+        return path.dirname(module_path)
 
     def _load_config_file(self):
-        if not os.path.exists(self._config_file):
+        if not path.exists(self._config_file):
             self._create_config_file()
 
         self._parser.read(self._config_file)
@@ -548,7 +549,7 @@ class Pymodoro(object):
 
     def __init__(self):
         self.config = Config()
-        self.session = os.path.expanduser(self.config.session_file)
+        self.session = path.expanduser(self.config.session_file)
         self.set_durations()
         self.running = True
         # cache last time the session file was touched
@@ -603,12 +604,12 @@ class Pymodoro(object):
             # Execute hooks
             if (current_state == self.ACTIVE_STATE and
                 next_state == self.BREAK_STATE and
-                os.path.exists(self.config.complete_pomodoro_hook_file)):
+                path.exists(self.config.complete_pomodoro_hook_file)):
                 subprocess.check_call(self.config.complete_pomodoro_hook_file)
 
             elif (current_state != self.ACTIVE_STATE and
                   next_state == self.ACTIVE_STATE and
-                  os.path.exists(self.config.start_pomodoro_hook_file)):
+                  path.exists(self.config.start_pomodoro_hook_file)):
                 subprocess.check_call(self.config.start_pomodoro_hook_file)
 
             self.state = next_state
@@ -718,8 +719,8 @@ class Pymodoro(object):
     def get_seconds_left(self):
         """Return seconds remaining in the current session."""
         seconds_left = None
-        if os.path.exists(self.session):
-            start_time = os.path.getmtime(self.session)
+        if path.exists(self.session):
+            start_time = path.getmtime(self.session)
             if start_time != self.last_start_time:
                 # the session file has been updated
                 # re-read the contents
@@ -747,7 +748,7 @@ class Pymodoro(object):
     def read_session_file(self):
         """Get pomodoro and break durations from session as a list."""
         content = ""
-        if os.path.exists(self.session):
+        if path.exists(self.session):
             f = open(self.session)
             content = f.readline()
             f.close()
