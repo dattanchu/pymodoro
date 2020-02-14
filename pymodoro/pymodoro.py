@@ -91,7 +91,8 @@ class Config(object):
     def load_defaults(self):
         self._script_path = self._get_script_path()
         self.data_path = path.join(self._script_path, 'data')
-        self.session_file = path.join(self._cache_dir, 'pomodoro_session')
+        self.session_file = path.join(self._cache_dir,
+                                      'pomodoro_session')
         self.auto_hide = False
 
         # Times
@@ -125,8 +126,11 @@ class Config(object):
 
         # Files for hooks (TODO make configurable)
         hooks_dir = path.expanduser(path.join(self._config_dir, "hooks"))
-        self.start_pomodoro_hook_file = path.join(hooks_dir, "start-pomodoro.py")
-        self.complete_pomodoro_hook_file = path.join(hooks_dir, "complete-pomodoro.py")
+
+        self.start_pomodoro_hook_file = path.join(hooks_dir,
+                                                  "start-pomodoro.py")
+        self.complete_pomodoro_hook_file = path.join(hooks_dir,
+                                                     "complete-pomodoro.py")
 
     def load_user_data(self):
         """
@@ -758,7 +762,9 @@ class Pymodoro(object):
         try:
             self.config.session_duration_secs = int(session_duration_str) * 60
         except ValueError:
-            print("Invalid session duration: {}.\nTry deleting your session file.".format(session_duration_str))
+            print(
+                "Invalid session duration: {}.\n"
+                "Try deleting your session file.".format(session_duration_str))
             sys.exit(1)
 
     def set_break_duration(self, break_duration_str):
