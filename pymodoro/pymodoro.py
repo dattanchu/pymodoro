@@ -48,16 +48,20 @@ class Config(object):
 
     def init_dirs(self):
         """
-        Determine locations of config, data and cache directories, creating
-        them if necessary.
+        Determine locations of directories used by pymodoro, creating missing
+        directories, if applicable.
 
-        Prefer following the XDG Base Directory specification, if possible.
+        It will determine the config and cache locations, the resource
+        directory (containing the default sounds) and the hooks directory.
+
+        Prefer following the XDG Base Directory specification for the config
+        and cache locations, if possible.
         """
 
         self._cache_home = os.environ.get('XDG_CACHE_HOME', '~/.cache')
         self._config_home = os.environ.get('XDG_CONFIG_HOME', '~/.config')
 
-        # Determine location of config dir and create it if it's missing
+        # Determine location of config dir.
         old_config_dir = os.path.expanduser('~/.pymodoro')
         new_config_dir = os.path.join(self._config_home, 'pymodoro')
 
@@ -67,20 +71,25 @@ class Config(object):
                   file=sys.stderr)
             self._config_dir = os.path.expanduser(old_config_dir)
         else:
-            if not os.path.exists(new_config_dir):
-                os.makedirs(new_config_dir)
             self._config_dir = os.path.expanduser(new_config_dir)
 
         # For the cache directory, we simply use the XDG cache home instead of
-        # creating a subdirectory. We create it if it's missing.
+        # creating a subdirectory.
         self._cache_dir = os.path.expanduser(self._cache_home)
 
-        if not os.path.exists(self._cache_dir):
-            os.makedirs(self._cache_dir)
+        # Determine some other directories used by pymodoro
+        self._hooks_dir = os.path.join(self._config_dir, "hooks")
+        self._script_path = self._get_script_path()
+        self._resource_dir = os.path.join(self._script_path, 'data')
+
+        # Create missing directories.
+        for d in (self._cache_dir, self._config_dir, self._hooks_dir):
+            if not os.path.exists(d):
+                os.makedirs(d)
 
     def load_defaults(self):
-        self.script_path = self._get_script_path()
-        self.data_path = os.path.join(self.script_path, 'data')
+        self._script_path = self._get_script_path()
+        self.data_path = os.path.join(self._script_path, 'data')
         self.session_file = os.path.join(self._cache_dir, 'pomodoro_session')
         self.auto_hide = False
 
@@ -128,9 +137,9 @@ class Config(object):
         """
 
         # Include any custom user sounds if present
-        user_session_sound = os.path.join(self._data_dir, 'session.wav')
-        user_break_sound = os.path.join(self._data_dir, 'break.wav')
-        user_tick_sound = os.path.join(self._data_dir, 'tick.wav')
+        user_session_sound = os.path.join(self._resource_dir, 'session.wav')
+        user_break_sound = os.path.join(self._resource_dir, 'break.wav')
+        user_tick_sound = os.path.join(self._resource_dir, 'tick.wav')
 
         if os.path.exists(user_session_sound):
             self.session_sound_file = user_session_sound
