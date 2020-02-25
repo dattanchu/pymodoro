@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # authors: Dat Chu <dattanchu@gmail.com>
 #          Dominik Mayer <dominik.mayer@gmail.com>
+#          Denis Kasak <dkasak@termina.org.uk>
 # Prerequisite
 #  - aplay to play a sound of your choice
 
