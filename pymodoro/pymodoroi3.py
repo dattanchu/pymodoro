@@ -50,6 +50,7 @@ class Py3status:
             # from red to green depending on how many time is left
             # in the current pomodoro
             from colour import Color
+
             start_c = Color(self.start_color)
             end_c = Color(self.end_color)
             break_c = Color(self.break_color)
@@ -63,7 +64,7 @@ class Py3status:
                 if seconds_left is not None:
                     nb_minutes_left = seconds_left // 60
                     if nb_minutes_left >= len(colors):
-                        nb_minutes_left = len(colors)-1
+                        nb_minutes_left = len(colors) - 1
                     self.color = colors[nb_minutes_left].hex
                 else:
                     self.color = start_c.hex
@@ -75,10 +76,10 @@ class Py3status:
             pass
 
         response = {
-            'full_text': text,
-            'color': self.color,
+            "full_text": text,
+            "color": self.color,
             # Don't cache anything
-            'cached_until': time.time()
+            "cached_until": time.time(),
         }
 
         return response
@@ -87,10 +88,11 @@ class Py3status:
 def main():
     """Test this module by calling it directly."""
     from time import sleep
+
     x = Py3status()
     config = {
-        'color_good': '#00FF00',
-        'color_bad': '#FF0000',
+        "color_good": "#00FF00",
+        "color_bad": "#FF0000",
     }
     while True:
         print(x.pymodoro_main([], config))
