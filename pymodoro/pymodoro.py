@@ -315,6 +315,7 @@ class Pymodoro(object):
         self.config = Config(args)
         self.session = path.expanduser(self.config.session_file)
         self.set_durations()
+        self.state = self.IDLE_STATE
         self.running = True
         # cache last time the session file was touched
         # to know if the session file contents should be re-read
@@ -334,8 +335,6 @@ class Pymodoro(object):
 
     def update_state(self):
         """Update the current state determined by timings."""
-        if not hasattr(self, "state"):
-            self.state = self.IDLE_STATE
 
         self.seconds_left = self.get_seconds_left()
         seconds_left = self.seconds_left
