@@ -315,51 +315,31 @@ class Pymodoro(object):
         self.config = Config(args)
         self.session = path.expanduser(self.config.session_file)
         self.set_durations()
-        self.state = self.IDLE_STATE
         self.running = True
         # cache last time the session file was touched
         # to know if the session file contents should be re-read
         self.last_start_time = 0
         self.seconds_left = None
+        self.state = self.get_current_state()
 
     def run(self):
         """Start main loop."""
         while self.running:
-            self.update_state()
+            next_state = self.get_current_state()
+            self.run_events(next_state)
+            self.state = next_state
+
             self.print_output()
             self.tick_sound()
+
             if self.config.enable_only_one_line:
                 break
             else:
                 self.wait()
 
-    def update_state(self):
-        """Update the current state determined by timings."""
-
-        self.seconds_left = self.get_seconds_left()
-        seconds_left = self.seconds_left
-        break_duration = self.config.break_duration_secs
-        break_elapsed = self.get_break_elapsed(seconds_left)
-
-        if seconds_left is None:
-            self.state = self.IDLE_STATE
-        elif seconds_left >= 0:
-            self.state = self.ACTIVE_STATE
-        elif break_elapsed <= break_duration:
-            self.state = self.BREAK_STATE
-        else:
-            self.state = self.WAIT_STATE
-
+    def run_events(self, next_state):
+        """Run events (notifications, hooks)."""
         current_state = self.state
-
-        if seconds_left is None:
-            next_state = self.IDLE_STATE
-        elif seconds_left > 1:
-            next_state = self.ACTIVE_STATE
-        elif break_elapsed + 1 < break_duration or seconds_left == 1:
-            next_state = self.BREAK_STATE
-        else:
-            next_state = self.WAIT_STATE
 
         if next_state is not current_state:
             self.send_notifications(next_state)
@@ -387,7 +367,24 @@ class Pymodoro(object):
                 )
                 subprocess.check_call(self.config.start_pomodoro_hook_file)
 
-            self.state = next_state
+    def get_current_state(self):
+        """Calculate and return the current state."""
+        self.seconds_left = self.get_seconds_left()
+
+        seconds_left = self.seconds_left
+        break_duration = self.config.break_duration_secs
+        break_elapsed = self.get_break_elapsed(seconds_left)
+
+        if seconds_left is None:
+            current_state = self.IDLE_STATE
+        elif seconds_left >= 0:
+            current_state = self.ACTIVE_STATE
+        elif break_elapsed <= break_duration:
+            current_state = self.BREAK_STATE
+        else:
+            current_state = self.WAIT_STATE
+
+        return current_state
 
     def send_notifications(self, next_state):
         """Send appropriate notifications when leaving a state."""
