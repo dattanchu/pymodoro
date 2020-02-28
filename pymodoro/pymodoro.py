@@ -189,8 +189,9 @@ class Config(object):
                     "tick_sound_file": path.join(self._resource_dir, "tick.wav"),
                 },
                 "Hooks": {
-                    "pomodoro_start": path.join(self._hooks_dir, "start-pomodoro.py"),
-                    "pomodoro_end": path.join(self._hooks_dir, "complete-pomodoro.py"),
+                    "pomodoro_start": "",
+                    "pomodoro_complete": "",
+                    "pomodoro_end": "",
                 },
             }
         )
@@ -241,13 +242,9 @@ class Config(object):
         self.tick_sound_file = settings.get_quoted_string("Sound", "tick_sound_file")
 
         # Files for hooks
-        self.start_pomodoro_hook_file = path.join(self._hooks_dir, "start-pomodoro.py")
-        self.complete_pomodoro_hook_file = path.join(
-            self._hooks_dir, "complete-pomodoro.py"
-        )
-        self.end_pomodoro_hook_file = path.join(
-            self._hooks_dir, "end-pomodoro.py"
-        )
+        self.start_pomodoro_hook_file = settings.get_quoted_string("Hooks", "pomodoro_start")
+        self.complete_pomodoro_hook_file = settings.get_quoted_string("Hooks", "pomodoro_complete")
+        self.end_pomodoro_hook_file = settings.get_quoted_string("Hooks", "pomodoro_end")
 
     def load_from_file(self, config_path):
         self._parser.read(config_path)
