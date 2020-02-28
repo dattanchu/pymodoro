@@ -245,6 +245,9 @@ class Config(object):
         self.complete_pomodoro_hook_file = path.join(
             self._hooks_dir, "complete-pomodoro.py"
         )
+        self.end_pomodoro_hook_file = path.join(
+            self._hooks_dir, "end-pomodoro.py"
+        )
 
     def load_from_file(self, config_path):
         self._parser.read(config_path)
@@ -346,6 +349,16 @@ class Pymodoro(object):
 
             # Execute hooks
             if (
+                current_state != self.ACTIVE_STATE
+                and next_state == self.ACTIVE_STATE
+                and path.exists(self.config.start_pomodoro_hook_file)
+            ):
+                logger.info(
+                    "Running pomodoro start hook: %s",
+                    self.config.start_pomodoro_hook_file,
+                )
+                subprocess.check_call(self.config.start_pomodoro_hook_file)
+            elif (
                 current_state == self.ACTIVE_STATE
                 and next_state == self.BREAK_STATE
                 and path.exists(self.config.complete_pomodoro_hook_file)
@@ -356,16 +369,16 @@ class Pymodoro(object):
                 )
                 subprocess.check_call(self.config.complete_pomodoro_hook_file)
 
-            elif (
-                current_state != self.ACTIVE_STATE
-                and next_state == self.ACTIVE_STATE
-                and path.exists(self.config.start_pomodoro_hook_file)
+            if (
+                current_state == self.ACTIVE_STATE
+                and next_state != self.ACTIVE_STATE
+                and path.exists(self.config.end_pomodoro_hook_file)
             ):
                 logger.info(
-                    "Running pomodoro start hook: %s",
-                    self.config.start_pomodoro_hook_file,
+                    "Running pomodoro end hook: %s",
+                    self.config.end_pomodoro_hook_file,
                 )
-                subprocess.check_call(self.config.start_pomodoro_hook_file)
+                subprocess.check_call(self.config.end_pomodoro_hook_file)
 
     def get_current_state(self):
         """Calculate and return the current state."""
