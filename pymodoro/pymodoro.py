@@ -242,13 +242,13 @@ class Config(object):
         self.tick_sound_file = settings.get_quoted_string("Sound", "tick_sound_file")
 
         # Files for hooks
-        self.start_pomodoro_hook_file = settings.get_quoted_string(
+        self.pomodoro_start_hook = settings.get_quoted_string(
             "Hooks", "pomodoro_start"
         )
-        self.complete_pomodoro_hook_file = settings.get_quoted_string(
+        self.pomodoro_complete_hook = settings.get_quoted_string(
             "Hooks", "pomodoro_complete"
         )
-        self.end_pomodoro_hook_file = settings.get_quoted_string(
+        self.pomodoro_end_hook = settings.get_quoted_string(
             "Hooks", "pomodoro_end"
         )
 
@@ -354,33 +354,33 @@ class Pymodoro(object):
             if (
                 current_state != self.ACTIVE_STATE
                 and next_state == self.ACTIVE_STATE
-                and path.exists(self.config.start_pomodoro_hook_file)
+                and path.exists(self.config.pomodoro_start_hook)
             ):
                 logger.info(
                     "Running pomodoro start hook: %s",
-                    self.config.start_pomodoro_hook_file,
+                    self.config.pomodoro_start_hook,
                 )
-                subprocess.check_call(self.config.start_pomodoro_hook_file)
+                subprocess.check_call(self.config.pomodoro_start_hook)
             elif (
                 current_state == self.ACTIVE_STATE
                 and next_state == self.BREAK_STATE
-                and path.exists(self.config.complete_pomodoro_hook_file)
+                and path.exists(self.config.pomodoro_complete_hook)
             ):
                 logger.info(
                     "Running pomodoro complete hook: %s",
-                    self.config.complete_pomodoro_hook_file,
+                    self.config.pomodoro_complete_hook,
                 )
-                subprocess.check_call(self.config.complete_pomodoro_hook_file)
+                subprocess.check_call(self.config.pomodoro_complete_hook)
 
             if (
                 current_state == self.ACTIVE_STATE
                 and next_state != self.ACTIVE_STATE
-                and path.exists(self.config.end_pomodoro_hook_file)
+                and path.exists(self.config.pomodoro_end_hook)
             ):
                 logger.info(
-                    "Running pomodoro end hook: %s", self.config.end_pomodoro_hook_file,
+                    "Running pomodoro end hook: %s", self.config.pomodoro_end_hook,
                 )
-                subprocess.check_call(self.config.end_pomodoro_hook_file)
+                subprocess.check_call(self.config.pomodoro_end_hook)
 
     def get_current_state(self):
         """Calculate and return the current state."""
