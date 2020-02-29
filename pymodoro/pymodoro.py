@@ -242,9 +242,15 @@ class Config(object):
         self.tick_sound_file = settings.get_quoted_string("Sound", "tick_sound_file")
 
         # Files for hooks
-        self.start_pomodoro_hook_file = settings.get_quoted_string("Hooks", "pomodoro_start")
-        self.complete_pomodoro_hook_file = settings.get_quoted_string("Hooks", "pomodoro_complete")
-        self.end_pomodoro_hook_file = settings.get_quoted_string("Hooks", "pomodoro_end")
+        self.start_pomodoro_hook_file = settings.get_quoted_string(
+            "Hooks", "pomodoro_start"
+        )
+        self.complete_pomodoro_hook_file = settings.get_quoted_string(
+            "Hooks", "pomodoro_complete"
+        )
+        self.end_pomodoro_hook_file = settings.get_quoted_string(
+            "Hooks", "pomodoro_end"
+        )
 
     def load_from_file(self, config_path):
         self._parser.read(config_path)
@@ -372,8 +378,7 @@ class Pymodoro(object):
                 and path.exists(self.config.end_pomodoro_hook_file)
             ):
                 logger.info(
-                    "Running pomodoro end hook: %s",
-                    self.config.end_pomodoro_hook_file,
+                    "Running pomodoro end hook: %s", self.config.end_pomodoro_hook_file,
                 )
                 subprocess.check_call(self.config.end_pomodoro_hook_file)
 
