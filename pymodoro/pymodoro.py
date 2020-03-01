@@ -192,6 +192,8 @@ class Config(object):
                     "pomodoro_start": "",
                     "pomodoro_complete": "",
                     "pomodoro_end": "",
+                    "break_complete": "",
+                    "idle_start": "",
                 },
             }
         )
@@ -250,6 +252,12 @@ class Config(object):
         )
         self.pomodoro_end_hook = settings.get_quoted_string(
             "Hooks", "pomodoro_end"
+        )
+        self.break_complete_hook = settings.get_quoted_string(
+            "Hooks", "break_complete"
+        )
+        self.idle_start_hook = settings.get_quoted_string(
+            "Hooks", "idle_start"
         )
 
     def load_from_file(self, config_path):
@@ -371,6 +379,26 @@ class Pymodoro(object):
                     self.config.pomodoro_complete_hook,
                 )
                 subprocess.check_call(self.config.pomodoro_complete_hook)
+            elif (
+                current_state == self.BREAK_STATE
+                and next_state == self.WAIT_STATE
+                and path.exists(self.config.break_complete_hook)
+            ):
+                logger.info(
+                    "Running break complete hook: %s",
+                    self.config.break_complete_hook,
+                )
+                subprocess.check_call(self.config.break_complete_hook)
+            elif (
+                current_state != self.IDLE_STATE
+                and next_state == self.IDLE_STATE
+                and path.exists(self.config.idle_start_hook)
+            ):
+                logger.info(
+                    "Running idle start hook: %s",
+                    self.config.idle_start_hook,
+                )
+                subprocess.check_call(self.config.idle_start_hook)
 
             if (
                 current_state == self.ACTIVE_STATE

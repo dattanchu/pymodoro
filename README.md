@@ -108,11 +108,14 @@ of the configuration file. The hooks should be set to the absolute path of an
 executable file (binary, bash script, Python script, etc) which you want to run
 when the associated event happens.
 
-- `pomodoro_start`: runs whenever the pomodoro is started
-- `pomodoro_complete`: runs whenever the pomodoro completes by the timer
+- `pomodoro_start`: runs whenever a pomodoro is started
+- `pomodoro_complete`: runs whenever a pomodoro completes by the timer
   elapsing
-- `pomodoro_end`: runs whenever the pomodoro ends, whether by elapsing or by
+- `pomodoro_end`: runs whenever a pomodoro ends, whether by elapsing or by
   the user terminated it manually (by deleting the session file)
+- `break_complete`: runs whenever a break ends completes by the timer elapsing
+- `idle_start`: runs whenever the idle state starts (which only happens when
+  the session file is deleted)
 
 ## Credits
 
