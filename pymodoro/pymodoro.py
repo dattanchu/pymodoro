@@ -253,21 +253,13 @@ class Config(object):
         self.tick_sound_file = settings.get_quoted_string("Sound", "tick_sound_file")
 
         # Files for hooks
-        self.pomodoro_start_hook = settings.get_quoted_string(
-            "Hooks", "pomodoro_start"
-        )
+        self.pomodoro_start_hook = settings.get_quoted_string("Hooks", "pomodoro_start")
         self.pomodoro_complete_hook = settings.get_quoted_string(
             "Hooks", "pomodoro_complete"
         )
-        self.pomodoro_end_hook = settings.get_quoted_string(
-            "Hooks", "pomodoro_end"
-        )
-        self.break_complete_hook = settings.get_quoted_string(
-            "Hooks", "break_complete"
-        )
-        self.idle_start_hook = settings.get_quoted_string(
-            "Hooks", "idle_start"
-        )
+        self.pomodoro_end_hook = settings.get_quoted_string("Hooks", "pomodoro_end")
+        self.break_complete_hook = settings.get_quoted_string("Hooks", "break_complete")
+        self.idle_start_hook = settings.get_quoted_string("Hooks", "idle_start")
 
     def load_from_file(self, config_path):
         self._parser.read(config_path)
@@ -387,8 +379,7 @@ class Pymodoro(object):
                 and path.exists(self.config.pomodoro_start_hook)
             ):
                 logger.info(
-                    "Running pomodoro start hook: %s",
-                    self.config.pomodoro_start_hook,
+                    "Running pomodoro start hook: %s", self.config.pomodoro_start_hook,
                 )
                 subprocess.check_call(self.config.pomodoro_start_hook)
             elif (
@@ -407,8 +398,7 @@ class Pymodoro(object):
                 and path.exists(self.config.break_complete_hook)
             ):
                 logger.info(
-                    "Running break complete hook: %s",
-                    self.config.break_complete_hook,
+                    "Running break complete hook: %s", self.config.break_complete_hook,
                 )
                 subprocess.check_call(self.config.break_complete_hook)
             elif (
@@ -417,8 +407,7 @@ class Pymodoro(object):
                 and path.exists(self.config.idle_start_hook)
             ):
                 logger.info(
-                    "Running idle start hook: %s",
-                    self.config.idle_start_hook,
+                    "Running idle start hook: %s", self.config.idle_start_hook,
                 )
                 subprocess.check_call(self.config.idle_start_hook)
 
