@@ -1,0 +1,22 @@
+# Maintainer: Denis Kasak <dkasak AT termina DOT org DOT uk>
+
+pkgname=pymodoro
+pkgver=1.0
+pkgrel=1
+pkgdesc="Pomodoro for Xmobar or Dzen"
+arch=(any)
+url=https://github.com/dkasak/pymodoro
+depends=(python)
+makedepends=(python-setuptools)
+provides=(pymodoro)
+conflicts=(pymodoro-git)
+source=("https://github.com/dkasak/pymodoro/releases/tag/v${pkgver}")
+sha256sums=("b679292415e6c682fb25756a03d408af51b8ac4057444dbbe66ae3be082cd97c")
+
+package() {
+    cd "$pkgname"
+    python setup.py install --root="$pkgdir/" --optimize=1
+    install -D README.md "$pkgdir"/usr/share/doc/pymodoro/README.md
+}
+
+# vim:set ts=4 sw=4 et:
