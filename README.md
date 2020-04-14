@@ -63,6 +63,8 @@ second one the length of the break. Both numbers are optional. Example:
 
     echo "20 2" > ~/.cache/pomodoro_session
 
+Sending a `SIGHUP` to the process will toggle the ticking sound.
+
 ### Keybindings
 
 The easiest way is to define keybindings for the commands.

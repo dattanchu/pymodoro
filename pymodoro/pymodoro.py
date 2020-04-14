@@ -11,6 +11,7 @@ from __future__ import division
 import logging
 import os
 from os import path
+import signal
 import sys
 import time
 import subprocess
@@ -346,11 +347,16 @@ class Pymodoro(object):
         self.session = path.expanduser(self.config.session_file)
         self.set_durations()
         self.running = True
-        # cache last time the session file was touched
-        # to know if the session file contents should be re-read
+
+        # Cache last time the session file was touched
+        # to know if the session file contents should be re-read.
         self.last_start_time = 0
+
         self.seconds_left = None
         self.state = self.get_current_state()
+
+        # Register SIGHUP signal handler for toggling the tick sound.
+        signal.signal(signal.SIGHUP, lambda _num, _frame: self.toggle_tick())
 
     def run(self):
         """Start main loop."""
@@ -539,6 +545,10 @@ class Pymodoro(object):
         """Wait for the specified interval."""
         interval = self.config.update_interval_secs
         time.sleep(interval)
+
+    def toggle_tick(self):
+        """Toggle ticking sound."""
+        self.config.enable_tick_sound = not self.config.enable_tick_sound
 
     def tick_sound(self):
         """Play the Pomodoro tick sound if enabled."""
