@@ -172,6 +172,10 @@ class Config(object):
                     "pomodoro_suffix": "",
                     "break_prefix": "B ",
                     "break_suffix": "",
+                    "wait_prefix": "W ",
+                    "wait_suffix": "",
+                    "idle_prefix": "I ",
+                    "idle_suffix": "",
                 },
                 "Progress Bar": {
                     "left_to_right": False,
@@ -219,6 +223,10 @@ class Config(object):
         self.pomodoro_suffix = settings.get_quoted_string("Labels", "pomodoro_suffix")
         self.break_prefix = settings.get_quoted_string("Labels", "break_prefix")
         self.break_suffix = settings.get_quoted_string("Labels", "break_suffix")
+        self.wait_prefix = settings.get_quoted_string("Labels", "wait_prefix")
+        self.wait_suffix = settings.get_quoted_string("Labels", "wait_suffix")
+        self.idle_prefix = settings.get_quoted_string("Labels", "idle_prefix")
+        self.idle_suffix = settings.get_quoted_string("Labels", "idle_suffix")
 
         # Progress Bar
         self.total_number_of_marks = settings.getint("Progress Bar", "total_marks")
@@ -313,6 +321,14 @@ class Config(object):
             self.pomodoro_prefix = args.pomodoro_prefix
         if args.pomodoro_suffix:
             self.pomodoro_suffix = args.pomodoro_suffix
+        if args.wait_prefix:
+            self.wait_prefix = args.wait_prefix
+        if args.wait_suffix:
+            self.wait_suffix = args.wait_suffix
+        if args.idle_prefix:
+            self.idle_prefix = args.idle_prefix
+        if args.idle_suffix:
+            self.idle_suffix = args.idle_suffix
 
         if args.oneline:
             self.enable_only_one_line = True
@@ -464,8 +480,8 @@ class Pymodoro(object):
         format = "%s%s%s%s\n"
 
         if self.state == self.IDLE_STATE and not auto_hide:
-            prefix = self.config.pomodoro_prefix
-            suffix = self.config.pomodoro_suffix
+            prefix = self.config.idle_prefix
+            suffix = self.config.idle_suffix
             progress = "-"
 
         elif self.state == self.ACTIVE_STATE:
@@ -501,8 +517,8 @@ class Pymodoro(object):
             output_minutes = self.get_output_minutes(seconds)
             output_hours = self.get_output_hours(seconds)
 
-            prefix = self.config.break_prefix
-            suffix = self.config.break_suffix
+            prefix = self.config.wait_prefix
+            suffix = self.config.wait_suffix
 
             if minutes < 60:
                 timer = "%02d:%02d min" % (minutes, output_seconds)
@@ -866,6 +882,42 @@ def get_args():
         'Defaults to "". Can be used to format display for dzen.',
         metavar="POMODORO SUFFIX",
         dest="pomodoro_suffix",
+    )
+    arg_parser.add_argument(
+        "-wp",
+        "--wait-prefix",
+        action="store",
+        help="String to display before, when we are in the wait state. "
+        'Defaults to "W". Can be used to format display for dzen.',
+        metavar="WAIT PREFIX",
+        dest="wait_prefix",
+    )
+    arg_parser.add_argument(
+        "-ws",
+        "--wait-suffix",
+        action="store",
+        help="String to display after, when we are in the wait state. "
+        'Defaults to "". Can be used to format display for dzen.',
+        metavar="WAIT SUFFIX",
+        dest="wait_suffix",
+    )
+    arg_parser.add_argument(
+        "-ip",
+        "--idle-prefix",
+        action="store",
+        help="String to display before, when we are in the idle state. "
+        'Defaults to "I". Can be used to format display for dzen.',
+        metavar="IDLE PREFIX",
+        dest="idle_prefix",
+    )
+    arg_parser.add_argument(
+        "-is",
+        "--idle-suffix",
+        action="store",
+        help="String to display after, when we are in the idle state. "
+        'Defaults to "". Can be used to format display for dzen.',
+        metavar="IDLE SUFFIX",
+        dest="idle_suffix",
     )
 
     arg_parser.add_argument(
