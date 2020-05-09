@@ -6,16 +6,17 @@
 #  - py3status for i3bar
 #  - pymodoro.py in your PYTHON_PATH or in the current directory
 
+from __future__ import division
+
 import sys
 import time
-import math
 
 from pymodoro.pymodoro import Pymodoro
 
 
 class Py3status:
-    """ Special class to allow pymodoro to be used as a module for
-        py3status, a python wrapper for i3bar.
+    """Special class to allow pymodoro to be used as a module for
+       py3status, a python wrapper for i3bar.
     """
 
     color = None
@@ -49,22 +50,21 @@ class Py3status:
             # from red to green depending on how many time is left
             # in the current pomodoro
             from colour import Color
+
             start_c = Color(self.start_color)
             end_c = Color(self.end_color)
             break_c = Color(self.break_color)
 
             if pymodoro.state == pymodoro.ACTIVE_STATE:
-                nb_minutes = int(
-                    math.floor(pymodoro.config.session_duration_secs / 60)
-                )
+                nb_minutes = pymodoro.config.session_duration_in_seconds // 60
                 colors = list(end_c.range_to(start_c, nb_minutes))
 
                 seconds_left = pymodoro.get_seconds_left()
 
                 if seconds_left is not None:
-                    nb_minutes_left = int(math.floor(seconds_left / 60))
+                    nb_minutes_left = seconds_left // 60
                     if nb_minutes_left >= len(colors):
-                        nb_minutes_left = len(colors)-1
+                        nb_minutes_left = len(colors) - 1
                     self.color = colors[nb_minutes_left].hex
                 else:
                     self.color = start_c.hex
@@ -76,10 +76,10 @@ class Py3status:
             pass
 
         response = {
-            'full_text': text,
-            'color': self.color,
+            "full_text": text,
+            "color": self.color,
             # Don't cache anything
-            'cached_until': time.time()
+            "cached_until": time.time(),
         }
 
         return response
@@ -88,10 +88,11 @@ class Py3status:
 def main():
     """Test this module by calling it directly."""
     from time import sleep
+
     x = Py3status()
     config = {
-        'color_good': '#00FF00',
-        'color_bad': '#FF0000',
+        "color_good": "#00FF00",
+        "color_bad": "#FF0000",
     }
     while True:
         print(x.pymodoro_main([], config))
