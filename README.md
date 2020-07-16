@@ -46,13 +46,13 @@ You can also install Pymodoro using pip, whithout having to download/clone the c
 
 ## Usage
 
-A new Pomodoro -- 25 minutes followed by a break of 5 minutes -- is started by changing the timestamp of ~/.pomodoro_session. This can be done by the shell command:
+A new Pomodoro -- 25 minutes followed by a break of 5 minutes -- is started by changing the timestamp of ~/.cache/pomodoro_session. This can be done by the shell command:
 
-    touch ~/.pomodoro_session
+    touch ~/.cache/pomodoro_session
 
 If you want to use counters with different times, write them into the session file. The first number specifies the length of the Pomodoro in minutes, the second one the length of the break. Both numbers are optional. Example:
 
-    echo "20 2" > ~/.pomodoro_session
+    echo "20 2" > ~/.cache/pomodoro_session
 
 ### Keybindings
 
@@ -63,12 +63,12 @@ The easiest way is to define keybindings for the commands.
 Configure xmonad to start a new Pomodoro session by adding this to your xmonad.hs:
 
     -- start a pomodoro
-    , ((modMask, xK_n), spawn "touch ~/.pomodoro_session")
+    , ((modMask, xK_n), spawn "touch ~/.cache/pomodoro_session")
 
 Or:
 
     -- start a pomodoro
-    , ("M-n", spawn "touch ~/.pomodoro_session")
+    , ("M-n", spawn "touch ~/.cache/pomodoro_session")
 
 This way, whenever you hit modMask + n, you will start a new pomodoro.
 
@@ -77,10 +77,10 @@ This way, whenever you hit modMask + n, you will start a new pomodoro.
 Here are some shortcuts examples for i3.
 
     # stop a pomodoro
-    bindsym $mod+Shift+f exec rm ~/.pomodoro_session
+    bindsym $mod+Shift+f exec rm ~/.cache/pomodoro_session
 
     # start/reset a pomodoro
-    bindsym $mod+Shift+h exec touch ~/.pomodoro_session
+    bindsym $mod+Shift+h exec touch ~/.cache/pomodoro_session
 
 ## Configure
 
