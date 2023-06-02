@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymodoro"
+authors = [
+    {name = "Denis Kasak", email = "dkasak@termina.org.uk"},
+]
+version = "0.4"
+description = "A simple command-line pomodoro timer"
+readme = "README.rst"
+requires-python = ">=3.7"
+keywords = ["pomodoro"]
+license = {text = "BSD-3-Clause"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    'importlib-metadata; python_version<"3.8"',
+]
+
+[project.scripts]
+pymodoro = "pymodoro.pymodoro:main"
+pymodoroi3 = "pymodoro.pymodoroi3:main"
